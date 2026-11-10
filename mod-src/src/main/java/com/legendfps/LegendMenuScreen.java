@@ -177,6 +177,12 @@ public class LegendMenuScreen extends RedScreen {
         if (selected != null) {
             final Cosmetic item = selected;
             boolean owned = Config.owns(item.id());
+            add("PREVIEW ON PLAYER", contentX, actionY - 25, contentW, b -> {
+                Config.data.previewed.put(cat.name(), item.id());
+                Config.save();
+                status = "Previewing " + item.name() + " on your character";
+                rebuildWidgets();
+            });
             int price = cosmeticPrice(item);
             add(owned ? "EQUIP / UNEQUIP" : "BUY • " + price, contentX, actionY,
                     Math.max(80, (contentW - 8) / 2), b -> {
