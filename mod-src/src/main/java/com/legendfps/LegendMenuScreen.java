@@ -210,7 +210,9 @@ public class LegendMenuScreen extends RedScreen {
                 });
     }
 
-    private static int cosmeticPrice(Cosmetic item) {\n        return Math.min(500, 100 + (Math.max(1, item.tier()) - 1) * 125);\n    }\n\n    private void gNoop() { }
+    private static int cosmeticPrice(Cosmetic item) {
+        return Math.min(500, 100 + (Math.max(1, item.tier()) - 1) * 125);
+    }
 
     private void initStore(int cx, int y, int buttonW) {
         codeBox = new EditBox(font, cx - buttonW / 2, y + 8, buttonW, 20, Component.literal("Redeem code"));
