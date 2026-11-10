@@ -166,10 +166,11 @@ public class LegendMenuScreen extends RedScreen {
         if (selected != null) {
             final Cosmetic item = selected;
             boolean owned = Config.owns(item.id());
-            add(owned ? "EQUIP / UNEQUIP" : "PURCHASE • 250", contentX, actionY,
+            int price = cosmeticPrice(item);
+            add(owned ? "EQUIP / UNEQUIP" : "PREVIEW / BUY • " + price, contentX, actionY,
                     Math.max(80, (contentW - 8) / 2), b -> {
                         if (!Config.owns(item.id())) {
-                            status = Config.buy(item, 250) ? "Purchased " + item.name() : "Not enough coins";
+                            status = Config.buy(item, price) ? "Purchased " + item.name() : "Not enough coins";
                         } else {
                             if (item.id().equals(Config.data.equipped.get(cat.name()))) Config.data.equipped.remove(cat.name());
                             else Config.data.equipped.put(cat.name(), item.id());
@@ -209,7 +210,7 @@ public class LegendMenuScreen extends RedScreen {
                 });
     }
 
-    private void gNoop() { }
+    private static int cosmeticPrice(Cosmetic item) {\n        return Math.min(500, 100 + (Math.max(1, item.tier()) - 1) * 125);\n    }\n\n    private void gNoop() { }
 
     private void initStore(int cx, int y, int buttonW) {
         codeBox = new EditBox(font, cx - buttonW / 2, y + 8, buttonW, 20, Component.literal("Redeem code"));
