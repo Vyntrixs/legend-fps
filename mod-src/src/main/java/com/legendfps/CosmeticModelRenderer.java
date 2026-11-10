@@ -67,9 +67,9 @@ public final class CosmeticModelRenderer {
                     : item.id().contains("forest") ? Blocks.GREEN_CONCRETE.defaultBlockState()
                     : item.id().contains("soul") ? Blocks.CYAN_CONCRETE.defaultBlockState()
                     : Blocks.RED_CONCRETE.defaultBlockState();
-            float size = item.id().endsWith("_small") ? 0.68F
-                    : item.id().endsWith("_large") ? 1.22F
-                    : item.id().endsWith("_medium") ? 0.92F : 1.0F;
+            float size = item.id().endsWith("_small") ? 0.30F
+                    : item.id().endsWith("_medium") ? 0.50F
+                    : item.id().endsWith("_large") ? 0.70F : 1.0F;
             float flap = (float)Math.sin(state.walkAnimationPos * 0.22F) * Math.min(10.0F, state.walkAnimationSpeed * 12.0F);
             for (int side : new int[]{-1, 1}) {
                 pose.pushPose();
