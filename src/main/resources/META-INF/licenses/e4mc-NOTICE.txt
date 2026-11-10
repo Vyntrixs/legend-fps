@@ -1,0 +1,18 @@
+Third-party component bundled in LEGEND FPS 2.1
+===============================================
+Name:      e4mc
+Version:   6.2.3 (unmodified, nested jar: META-INF/jars/e4mc-fabric-6.2.3.jar)
+Author:    vgskye
+License:   MIT (as declared in the mod's own fabric.mod.json)
+Homepage:  https://e4mc.link/
+Source:    https://github.com/vgskye/e4mc-minecraft-architectury
+Modrinth:  https://modrinth.com/mod/e4mc
+
+The MIT License requires that the copyright notice and permission notice of the
+original project accompany copies of the software. The e4mc JAR supplied for this
+build did not contain a LICENSE file, so the exact upstream copyright line could
+not be copied here. BEFORE PUBLIC DISTRIBUTION: copy the full LICENSE text from the
+upstream repository above into this file.
+
+e4mc is bundled unmodified and keeps its own mod id ("e4mc"). It is not merged into,
+or relicensed under, LEGEND FPS.

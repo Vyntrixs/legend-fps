@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "legendfps",
+  "version": "${version}",
+  "name": "LEGEND FPS",
+  "description": "LEGEND FPS client with red/black menus, relay-backed friends, friend requests, world invites (via bundled e4mc) and performance tools.",
+  "authors": [
+    "LEGEND FPS"
+  ],
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.legendfps.LegendFpsClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "jars": [
+    {
+      "file": "META-INF/jars/e4mc-fabric-6.2.3.jar"
+    }
+  ],
+  "custom": {
+    "legendfps:bundled": "e4mc 6.2.3 by vgskye (MIT) - see META-INF/licenses/e4mc-NOTICE.txt"
+  },
+  "license": "All Rights Reserved (LEGEND FPS); bundled e4mc is MIT"
+}
