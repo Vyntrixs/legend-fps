@@ -1,0 +1,50 @@
+name: Extract and build LEGEND FPS
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "LEGEND-FPS-2.1-SOURCE.zip"
+      - ".github/workflows/extract-source.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  extract-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Extract source
+        run: |
+          set -euo pipefail
+          mkdir -p _unpack
+          unzip -q -o LEGEND-FPS-2.1-SOURCE.zip -d _unpack
+          first="$(find _unpack -mindepth 1 -maxdepth 1 -print -quit)"
+          count="$(find _unpack -mindepth 1 -maxdepth 1 | wc -l)"
+          if [ "$count" -eq 1 ] && [ -d "$first" ]; then cp -a "$first"/. .; else cp -a _unpack/. .; fi
+          rm -rf _unpack
+      - name: Commit extracted source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Extract LEGEND FPS 2.1 source"
+            git push
+          fi
+      - name: Build mod
+        run: |
+          test -f ./gradlew
+          chmod +x ./gradlew
+          ./gradlew --no-daemon build
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: LEGEND-FPS-build
+          path: "**/build/libs/*.jar"
+          if-no-files-found: error
