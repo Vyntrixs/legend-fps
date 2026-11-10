@@ -47,13 +47,15 @@ public final class CosmeticModelRenderer {
 
             Cosmetic wing = Cosmetic.equipped(Cosmetic.Category.WING);
             Cosmetic cape = Cosmetic.equipped(Cosmetic.Category.CAPE);
-            if (wing == null && cape == null) return;
+            Cosmetic pet = Cosmetic.equipped(Cosmetic.Category.PETS);
+            if (wing == null && cape == null && pet == null) return;
 
             pose.pushPose();
             getParentModel().body.translateAndRotate(pose);
             pose.scale(1.0F / 16.0F, 1.0F / 16.0F, 1.0F / 16.0F);
             if (wing != null) drawWings(pose, queue, light, wing, state);
             if (cape != null) drawCape(pose, queue, light, cape, state);
+            if (pet != null) drawPet(pose, queue, light, pet, state);
             pose.popPose();
         }
 
@@ -110,6 +112,56 @@ public final class CosmeticModelRenderer {
                     block(pose, queue, trim, light, -1, row, -0.1F);
                     block(pose, queue, trim, light, 1, row, -0.1F);
                 }
+            }
+            pose.popPose();
+        }
+
+        private static void drawPet(PoseStack pose, SubmitNodeCollector queue, int light,
+                                    Cosmetic pet, AvatarRenderState state) {
+            String id = pet.id();
+            boolean shoulder = id.contains("dragon") || id.contains("fox") || id.contains("phantom");
+            pose.pushPose();
+            if (shoulder) {
+                pose.translate(id.contains("fox") ? 5.0F : -5.0F, -5.0F, 1.0F);
+            } else {
+                pose.translate(0.0F, -10.0F + (float)Math.sin(state.ageInTicks * 0.08F) * 0.7F, 0.0F);
+            }
+            BlockState body = id.contains("bee") ? Blocks.YELLOW_CONCRETE.defaultBlockState()
+                    : id.contains("slime") ? Blocks.LIME_CONCRETE.defaultBlockState()
+                    : id.contains("phantom") ? Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState()
+                    : id.contains("fox") ? Blocks.ORANGE_CONCRETE.defaultBlockState()
+                    : Blocks.RED_CONCRETE.defaultBlockState();
+            BlockState detail = id.contains("bee") || id.contains("dragon") ? Blocks.BLACK_CONCRETE.defaultBlockState()
+                    : id.contains("fox") ? Blocks.WHITE_CONCRETE.defaultBlockState()
+                    : Blocks.PURPLE_CONCRETE.defaultBlockState();
+            block(pose, queue, body, light, 0, 0, 0);
+            block(pose, queue, body, light, 0, -1, 0);
+            block(pose, queue, body, light, 0, -1, -1);
+            block(pose, queue, detail, light, -0.5F, -1, -1.6F);
+            block(pose, queue, detail, light, 0.5F, -1, -1.6F);
+            if (id.contains("bee")) {
+                block(pose, queue, Blocks.WHITE_CONCRETE.defaultBlockState(), light, -1, 0, 0);
+                block(pose, queue, Blocks.WHITE_CONCRETE.defaultBlockState(), light, 1, 0, 0);
+                block(pose, queue, detail, light, 0, 0, -1);
+            } else if (id.contains("fox")) {
+                block(pose, queue, body, light, -1, -2, 0);
+                block(pose, queue, body, light, 1, -2, 0);
+                block(pose, queue, Blocks.WHITE_CONCRETE.defaultBlockState(), light, 0, 0, -1);
+                block(pose, queue, Blocks.ORANGE_CONCRETE.defaultBlockState(), light, 0, 1, 1);
+            } else if (id.contains("dragon")) {
+                block(pose, queue, detail, light, -1, 0, 0);
+                block(pose, queue, detail, light, 1, 0, 0);
+                block(pose, queue, body, light, -2, 0, 0);
+                block(pose, queue, body, light, 2, 0, 0);
+                block(pose, queue, detail, light, 0, -2, 1);
+            } else if (id.contains("phantom")) {
+                block(pose, queue, body, light, -2, 0, 0);
+                block(pose, queue, body, light, 2, 0, 0);
+                block(pose, queue, detail, light, -1, 1, 0);
+                block(pose, queue, detail, light, 1, 1, 0);
+            } else {
+                block(pose, queue, detail, light, -1, -1, 0);
+                block(pose, queue, detail, light, 1, -1, 0);
             }
             pose.popPose();
         }
