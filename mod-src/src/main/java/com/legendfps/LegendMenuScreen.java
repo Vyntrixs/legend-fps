@@ -262,7 +262,8 @@ public class LegendMenuScreen extends RedScreen {
                 }
                 Config.data.selectedEmote = dance;
                 Config.save();
-                EmoteAnimation.play(dance);\n                status = "Playing " + dance + " • 8 seconds";
+                EmoteAnimation.play(dance);
+                status = "Playing " + dance + " • 8 seconds";
                 rebuildWidgets();
             });
         }
