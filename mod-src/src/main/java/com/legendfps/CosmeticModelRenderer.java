@@ -67,8 +67,26 @@ public final class CosmeticModelRenderer {
             if (wing != null) drawWings(pose, queue, light, wing, state);
             if (cape != null) drawCape(pose, queue, light, cape, state);
             if (pet != null) drawPet(pose, queue, light, pet, state);
-            for (Cosmetic extra : extras) if (extra != null) drawAccessory(pose, queue, light, extra, state);
+            for (Cosmetic extra : extras) {
+                if (extra == null) continue;
+                if (extra.category() == Cosmetic.Category.HAT || extra.category() == Cosmetic.Category.HAIR
+                        || extra.category() == Cosmetic.Category.FACE || extra.category() == Cosmetic.Category.EARS) continue;
+                drawAccessory(pose, queue, light, extra, state);
+            }
             pose.popPose();
+
+            Cosmetic[] headItems = new Cosmetic[] {
+                Cosmetic.equipped(Cosmetic.Category.HAT), Cosmetic.equipped(Cosmetic.Category.HAIR),
+                Cosmetic.equipped(Cosmetic.Category.FACE), Cosmetic.equipped(Cosmetic.Category.EARS)
+            };
+            for (Cosmetic headItem : headItems) {
+                if (headItem == null) continue;
+                pose.pushPose();
+                getParentModel().head.translateAndRotate(pose);
+                pose.scale(1.0F / 16.0F, 1.0F / 16.0F, 1.0F / 16.0F);
+                drawHeadAccessory(pose, queue, light, headItem);
+                pose.popPose();
+            }
         }
 
         private static void drawWings(PoseStack pose, SubmitNodeCollector queue, int light,
@@ -190,28 +208,7 @@ public final class CosmeticModelRenderer {
                     : Blocks.BLACK_CONCRETE.defaultBlockState();
             pose.pushPose();
             switch (category) {
-                case HAT, HAIR -> {
-                    for (int x=-3;x<=3;x++) block(pose,queue,primary,light,x,-7,0);
-                    for (int x=-2;x<=2;x++) block(pose,queue,primary,light,x,-8,0);
-                    if (category == Cosmetic.Category.HAT) {
-                        block(pose,queue,accent,light,-2,-8,0);
-                        block(pose,queue,accent,light,2,-8,0);
-                    } else {
-                        block(pose,queue,primary,light,-2,-9,0);
-                        block(pose,queue,primary,light,2,-9,0);
-                    }
-                }
-                case FACE -> {
-                    for (int x=-2;x<=2;x++) block(pose,queue,primary,light,x,-3,-3);
-                    block(pose,queue,accent,light,-2,-3,-3);
-                    block(pose,queue,accent,light,2,-3,-3);
-                }
-                case EARS -> {
-                    block(pose,queue,primary,light,-4,-7,0);
-                    block(pose,queue,primary,light,4,-7,0);
-                    block(pose,queue,accent,light,-4,-8,0);
-                    block(pose,queue,accent,light,4,-8,0);
-                }
+                case HAT, HAIR, FACE, EARS -> { /* rendered on the moving head part */ }
                 case SHOULDERS -> {
                     block(pose,queue,primary,light,-5,-1,0);
                     block(pose,queue,primary,light,5,-1,0);
@@ -261,6 +258,41 @@ public final class CosmeticModelRenderer {
                 default -> { }
             }
             pose.popPose();
+        }
+
+        /** Head cosmetics follow head rotation instead of floating from the torso. */
+        private static void drawHeadAccessory(PoseStack pose, SubmitNodeCollector queue, int light, Cosmetic item) {
+            String id = item.id();
+            BlockState primary = accessoryBlock(id);
+            BlockState accent = id.contains("gold") || id.contains("royal") ? Blocks.YELLOW_CONCRETE.defaultBlockState()
+                    : id.contains("frost") || id.contains("ice") ? Blocks.PACKED_ICE.defaultBlockState()
+                    : Blocks.BLACK_CONCRETE.defaultBlockState();
+            switch (item.category()) {
+                case HAT -> {
+                    for (int x=-4;x<=4;x++) block(pose,queue,primary,light,x,-4,0);
+                    for (int x=-3;x<=3;x++) block(pose,queue,primary,light,x,-5,0);
+                    block(pose,queue,accent,light,-2,-5,0);
+                    block(pose,queue,accent,light,2,-5,0);
+                }
+                case HAIR -> {
+                    for (int x=-4;x<=4;x++) block(pose,queue,primary,light,x,-3,1);
+                    for (int x=-3;x<=3;x++) block(pose,queue,primary,light,x,-4,1);
+                    block(pose,queue,primary,light,-3,-2,-3);
+                    block(pose,queue,primary,light,3,-2,-3);
+                }
+                case FACE -> {
+                    for (int x=-3;x<=3;x++) block(pose,queue,primary,light,x,-1,-4);
+                    block(pose,queue,accent,light,-3,-1,-4);
+                    block(pose,queue,accent,light,3,-1,-4);
+                }
+                case EARS -> {
+                    block(pose,queue,primary,light,-4,-2,0);
+                    block(pose,queue,primary,light,4,-2,0);
+                    block(pose,queue,accent,light,-4,-3,0);
+                    block(pose,queue,accent,light,4,-3,0);
+                }
+                default -> { }
+            }
         }
 
         private static BlockState accessoryBlock(String id) {
