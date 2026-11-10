@@ -108,7 +108,8 @@ public record Cosmetic(String id, String name, Category category, ParticleOption
         return out;
     }
     public static Cosmetic equipped(Category cat) {
-        String id = Config.data.equipped.get(cat.name());
+        String id = Config.data.previewed.get(cat.name());
+        if (id == null) id = Config.data.equipped.get(cat.name());
         if (id == null) return null;
         for (Cosmetic c : ALL) if (c.id().equals(id) && Config.owns(id)) return c;
         return null;
