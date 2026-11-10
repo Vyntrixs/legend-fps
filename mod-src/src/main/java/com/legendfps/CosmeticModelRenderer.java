@@ -48,7 +48,18 @@ public final class CosmeticModelRenderer {
             Cosmetic wing = Cosmetic.equipped(Cosmetic.Category.WING);
             Cosmetic cape = Cosmetic.equipped(Cosmetic.Category.CAPE);
             Cosmetic pet = Cosmetic.equipped(Cosmetic.Category.PETS);
-            if (wing == null && cape == null && pet == null) return;
+            Cosmetic[] extras = new Cosmetic[] {
+                Cosmetic.equipped(Cosmetic.Category.HAT), Cosmetic.equipped(Cosmetic.Category.HAIR),
+                Cosmetic.equipped(Cosmetic.Category.FACE), Cosmetic.equipped(Cosmetic.Category.EARS),
+                Cosmetic.equipped(Cosmetic.Category.SHOULDERS), Cosmetic.equipped(Cosmetic.Category.ARMS),
+                Cosmetic.equipped(Cosmetic.Category.BACK), Cosmetic.equipped(Cosmetic.Category.TOPS),
+                Cosmetic.equipped(Cosmetic.Category.PANTS), Cosmetic.equipped(Cosmetic.Category.OUTFITS),
+                Cosmetic.equipped(Cosmetic.Category.SHOES), Cosmetic.equipped(Cosmetic.Category.OUTERWEAR),
+                Cosmetic.equipped(Cosmetic.Category.HALO)
+            };
+            boolean hasExtra = false;
+            for (Cosmetic extra : extras) if (extra != null) { hasExtra = true; break; }
+            if (wing == null && cape == null && pet == null && !hasExtra) return;
 
             pose.pushPose();
             getParentModel().body.translateAndRotate(pose);
@@ -56,6 +67,7 @@ public final class CosmeticModelRenderer {
             if (wing != null) drawWings(pose, queue, light, wing, state);
             if (cape != null) drawCape(pose, queue, light, cape, state);
             if (pet != null) drawPet(pose, queue, light, pet, state);
+            for (Cosmetic extra : extras) if (extra != null) drawAccessory(pose, queue, light, extra, state);
             pose.popPose();
         }
 
@@ -164,6 +176,101 @@ public final class CosmeticModelRenderer {
                 block(pose, queue, detail, light, 1, -1, 0);
             }
             pose.popPose();
+        }
+
+        /** Small voxel accessories positioned relative to the player's torso. */
+        private static void drawAccessory(PoseStack pose, SubmitNodeCollector queue, int light,
+                                          Cosmetic item, AvatarRenderState state) {
+            String id = item.id();
+            Cosmetic.Category category = item.category();
+            BlockState primary = accessoryBlock(id);
+            BlockState accent = id.contains("gold") || id.contains("royal") ? Blocks.GOLD_BLOCK.defaultBlockState()
+                    : id.contains("frost") || id.contains("ice") ? Blocks.PACKED_ICE.defaultBlockState()
+                    : id.contains("cyber") || id.contains("neon") ? Blocks.CYAN_CONCRETE.defaultBlockState()
+                    : Blocks.BLACK_CONCRETE.defaultBlockState();
+            pose.pushPose();
+            switch (category) {
+                case HAT, HAIR -> {
+                    for (int x=-3;x<=3;x++) block(pose,queue,primary,light,x,-7,0);
+                    for (int x=-2;x<=2;x++) block(pose,queue,primary,light,x,-8,0);
+                    if (category == Cosmetic.Category.HAT) {
+                        block(pose,queue,accent,light,-2,-8,0);
+                        block(pose,queue,accent,light,2,-8,0);
+                    } else {
+                        block(pose,queue,primary,light,-2,-9,0);
+                        block(pose,queue,primary,light,2,-9,0);
+                    }
+                }
+                case FACE -> {
+                    for (int x=-2;x<=2;x++) block(pose,queue,primary,light,x,-3,-3);
+                    block(pose,queue,accent,light,-2,-3,-3);
+                    block(pose,queue,accent,light,2,-3,-3);
+                }
+                case EARS -> {
+                    block(pose,queue,primary,light,-4,-7,0);
+                    block(pose,queue,primary,light,4,-7,0);
+                    block(pose,queue,accent,light,-4,-8,0);
+                    block(pose,queue,accent,light,4,-8,0);
+                }
+                case SHOULDERS -> {
+                    block(pose,queue,primary,light,-5,-1,0);
+                    block(pose,queue,primary,light,5,-1,0);
+                    block(pose,queue,accent,light,-5,-2,0);
+                    block(pose,queue,accent,light,5,-2,0);
+                }
+                case ARMS -> {
+                    for (int y=-1;y<=3;y++) {
+                        block(pose,queue,primary,light,-6,y,0);
+                        block(pose,queue,primary,light,6,y,0);
+                    }
+                }
+                case BACK -> {
+                    for (int y=-2;y<=2;y++) {
+                        block(pose,queue,primary,light,-2,y,3);
+                        block(pose,queue,primary,light,2,y,3);
+                    }
+                    block(pose,queue,accent,light,0,0,3);
+                }
+                case TOPS, OUTFITS, OUTERWEAR -> {
+                    for (int y=-1;y<=4;y++) for (int x=-3;x<=3;x++) {
+                        if (x==-3 || x==3 || y==4 || y==-1 || category != Cosmetic.Category.TOPS)
+                            block(pose,queue,primary,light,x,y,2);
+                    }
+                    if (category == Cosmetic.Category.OUTERWEAR || category == Cosmetic.Category.OUTFITS)
+                        block(pose,queue,accent,light,0,1,3);
+                }
+                case PANTS -> {
+                    for (int y=5;y<=8;y++) {
+                        for (int x=-2;x<=2;x++) if (x==-2 || x==2 || y==8)
+                            block(pose,queue,primary,light,x,y,1);
+                    }
+                }
+                case SHOES -> {
+                    for (int x=-3;x<=-1;x++) block(pose,queue,primary,light,x,9,1);
+                    for (int x=1;x<=3;x++) block(pose,queue,primary,light,x,9,1);
+                    block(pose,queue,accent,light,-2,9,0);
+                    block(pose,queue,accent,light,2,9,0);
+                }
+                case HALO -> {
+                    for (int i=0;i<12;i++) {
+                        double a=i*Math.PI/6.0;
+                        float bob=(float)Math.sin(state.ageInTicks*0.08F)*0.35F;
+                        block(pose,queue,primary,light,(float)Math.cos(a)*4.0F,-11.0F+bob,(float)Math.sin(a)*2.0F);
+                    }
+                }
+                default -> { }
+            }
+            pose.popPose();
+        }
+
+        private static BlockState accessoryBlock(String id) {
+            if (id.contains("frost") || id.contains("ice")) return Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState();
+            if (id.contains("gold") || id.contains("royal")) return Blocks.YELLOW_CONCRETE.defaultBlockState();
+            if (id.contains("green") || id.contains("forest") || id.contains("emerald")) return Blocks.GREEN_CONCRETE.defaultBlockState();
+            if (id.contains("void") || id.contains("shadow") || id.contains("phantom")) return Blocks.PURPLE_CONCRETE.defaultBlockState();
+            if (id.contains("cyber") || id.contains("neon")) return Blocks.CYAN_CONCRETE.defaultBlockState();
+            if (id.contains("pink") || id.contains("sakura") || id.contains("heart")) return Blocks.PINK_CONCRETE.defaultBlockState();
+            return Blocks.RED_CONCRETE.defaultBlockState();
         }
 
         private static void block(PoseStack pose, SubmitNodeCollector queue, BlockState block,
