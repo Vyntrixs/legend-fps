@@ -28,6 +28,8 @@ jobs:
           count="$(find _unpack -mindepth 1 -maxdepth 1 | wc -l)"
           if [ "$count" -eq 1 ] && [ -d "$first" ]; then cp -a "$first"/. .; else cp -a _unpack/. .; fi
           rm -rf _unpack
+          # The source archive restores an older wrapper; Loom 1.14.10 needs Gradle 9.2.0.
+          sed -i 's/gradle-[0-9.]*-bin.zip/gradle-9.2.0-bin.zip/' gradle/wrapper/gradle-wrapper.properties
       - name: Commit extracted source
         run: |
           set -euo pipefail
