@@ -8,7 +8,7 @@ on:
       - ".github/workflows/extract-source.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   extract-build:
@@ -28,21 +28,9 @@ jobs:
           count="$(find _unpack -mindepth 1 -maxdepth 1 | wc -l)"
           if [ "$count" -eq 1 ] && [ -d "$first" ]; then cp -a "$first"/. .; else cp -a _unpack/. .; fi
           rm -rf _unpack
-          # The source archive restores an older wrapper; Loom 1.14.10 needs Gradle 9.2.0.
+          # Fabric Loom 1.14.10 requires Gradle 9.2.0.
           sed -i 's/gradle-[0-9.]*-bin.zip/gradle-9.2.0-bin.zip/' gradle/wrapper/gradle-wrapper.properties
-      - name: Commit extracted source
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          # The archive includes its own build workflow. This integration token
-          # cannot publish workflow files, so leave that file in the runner only.
-          git reset -q -- .github/workflows/build.yml || true
-          if ! git diff --cached --quiet; then
-            git commit -m "Extract LEGEND FPS 2.1 source"
-            git push
-          fi
+          grep 'distributionUrl=.*gradle-9.2.0-bin.zip' gradle/wrapper/gradle-wrapper.properties
       - name: Build mod
         run: |
           set -euo pipefail
