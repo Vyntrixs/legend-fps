@@ -3,6 +3,7 @@ package com.legendfps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class LegendMenuScreen extends RedScreen {
     private static final String[] TABS = {"HOME", "SOCIAL", "WARDROBE", "SKINS", "EMOTES", "STORE", "SETTINGS"};
@@ -20,6 +22,7 @@ public class LegendMenuScreen extends RedScreen {
     private String selectedCosmeticId;
     private EditBox nameBox;
     private EditBox codeBox;
+    private final List<Button> styledButtons = new ArrayList<>();
 
     public LegendMenuScreen(Screen parent) { this(parent, false); }
 
@@ -30,8 +33,16 @@ public class LegendMenuScreen extends RedScreen {
     }
 
     @Override
+    protected Button add(String label, int x, int y, int w, Button.OnPress press) {
+        Button button = super.add(label, x, y, w, press);
+        styledButtons.add(button);
+        return button;
+    }
+
+    @Override
     protected void init() {
         clearWidgets();
+        styledButtons.clear();
         int navY = 38;
         int gap = 3;
         int navW = Math.max(38, Math.min(76, (width - 24 - gap * (TABS.length - 1)) / TABS.length));
@@ -249,6 +260,21 @@ public class LegendMenuScreen extends RedScreen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         super.render(g, mouseX, mouseY, delta);
+        // Re-skin every clickable menu button with the LEGEND black/red theme.
+        for (Button button : styledButtons) {
+            int bx = button.getX();
+            int by = button.getY();
+            int bw = button.getWidth();
+            int bh = button.getHeight();
+            boolean hovered = mouseX >= bx && mouseX < bx + bw && mouseY >= by && mouseY < by + bh;
+            int edge = hovered ? 0xFFFF343D : 0xFF8F1721;
+            int fill = hovered ? 0xFF3A0D13 : 0xFF111116;
+            g.fill(bx, by, bx + bw, by + bh, edge);
+            g.fill(bx + 1, by + 1, bx + bw - 1, by + bh - 1, fill);
+            g.fill(bx + 2, by + 2, bx + bw - 2, by + 4, hovered ? 0xFFFF4A52 : 0xFFB51D2A);
+            int textColor = button.active ? (hovered ? 0xFFFFFFFF : 0xFFF2E8E9) : 0xFF777777;
+            g.drawCenteredString(font, button.getMessage(), bx + bw / 2, by + (bh - 8) / 2 + 1, textColor);
+        }
         g.drawCenteredString(font, Component.literal("LEGEND FPS  •  " + Minecraft.getInstance().getUser().getName()), width / 2, 10, WHITE);
         if (Minecraft.getInstance().player != null && width >= 560 && tab != 1 && tab != 2) {
             int c = width / 2 + Math.min(170, width / 4);
