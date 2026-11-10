@@ -18,6 +18,7 @@ public class Config {
         public List<String> outfitNames = new ArrayList<>();
         public List<Map<String, String>> outfits = new ArrayList<>();
         public Map<String, String> equipped = new HashMap<>();
+        public Map<String, String> previewed = new HashMap<>();
         public int coins = 0;
         public boolean effects = true;
         public String relayUrl = "";
@@ -64,6 +65,7 @@ public class Config {
         if (data.outfitNames == null) data.outfitNames = new ArrayList<>();
         if (data.outfits == null) data.outfits = new ArrayList<>();
         if (data.equipped == null) data.equipped = new HashMap<>();
+        if (data.previewed == null) data.previewed = new HashMap<>();
         if (data.coins < 0) data.coins = 0;
         if (data.relayUrl == null) data.relayUrl = "";
         if (data.relayToken == null) data.relayToken = "";
