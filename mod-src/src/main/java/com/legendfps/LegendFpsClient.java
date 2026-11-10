@@ -7,12 +7,9 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 public class LegendFpsClient implements ClientModInitializer {
@@ -25,17 +22,13 @@ public class LegendFpsClient implements ClientModInitializer {
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> WorldInviteService.observeGameMessage(message));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldInviteService.reset());
 
-        // Add a real entry button to both the title screen and the ESC pause menu.
+        // Replace the vanilla title and pause screens with LEGEND's own navigation.
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            if (screen instanceof TitleScreen || screen instanceof PauseScreen) {
-                int buttonWidth = Math.min(118, Math.max(92, scaledWidth / 4));
-                int x = Math.max(4, scaledWidth - buttonWidth - 8);
-                int y = screen instanceof TitleScreen ? 8 : 8;
-                Button legendButton = Button.builder(Component.literal("LEGEND FPS"), button ->
-                                client.setScreen(new LegendMenuScreen(screen)))
-                        .bounds(x, y, buttonWidth, 20)
-                        .build();
-                Screens.getButtons(screen).add(legendButton);
+            if (client.screen != screen) return;
+            if (screen instanceof TitleScreen) {
+                client.setScreen(new LegendMenuScreen(null, false));
+            } else if (screen instanceof PauseScreen) {
+                client.setScreen(new LegendMenuScreen(null, true));
             }
         });
 
@@ -48,7 +41,7 @@ public class LegendFpsClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openKey.consumeClick()) {
                 if (client.screen == null) {
-                    client.setScreen(new LegendMenuScreen(null));
+                    client.setScreen(new LegendMenuScreen(null, true));
                 }
             }
             CosmeticEffects.tick(client);
