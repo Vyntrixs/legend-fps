@@ -23,6 +23,13 @@ public class LegendMenuScreen extends RedScreen {
     private EditBox nameBox;
     private EditBox codeBox;
     private final List<Button> styledButtons = new ArrayList<>();
+    private int emotePackIndex = 0;
+    private static final String[][] EMOTE_PACKS = {
+        {"Wave","Salute","Clap","Point","Cheer","Laugh","Bow","Shrug","Dance 01","Dance 02","Dance 03","Dance 04","Dance 05","Dance 06","Dance 07"},
+        {"Legend Dance 01","Legend Dance 02","Legend Dance 03","Legend Dance 04","Legend Dance 05","Legend Dance 06","Legend Dance 07","Legend Dance 08","Legend Dance 09","Legend Dance 10","Legend Dance 11","Legend Dance 12","Legend Dance 13","Legend Dance 14","Legend Dance 15"},
+        {"Special Dance 01","Special Dance 02","Special Dance 03","Special Dance 04","Special Dance 05","Special Dance 06","Special Dance 07","Special Dance 08","Special Dance 09","Special Dance 10","Special Dance 11","Special Dance 12","Special Dance 13","Special Dance 14","Special Dance 15"}
+    };
+    private static final String[] EMOTE_CODES = {"854123","739206","916482"};
 
     public LegendMenuScreen(Screen parent) { this(parent, false); }
 
@@ -76,12 +83,7 @@ public class LegendMenuScreen extends RedScreen {
                         b -> { Minecraft.getInstance().keyboardHandler.setClipboard("https://www.minecraft.net/msaprofile/mygames/editskin"); status = "Official skin page link copied"; });
                 add("SKIN PNG IMPORT IS NOT READY", cx - buttonW / 2, y + 42, buttonW, b -> status = "PNG importing is still being integrated");
             }
-            case 4 -> {
-                add("DANCE PACK 854123", cx - buttonW / 2, y + 10, buttonW, b -> status = Config.redeem("854123"));
-                add("LEGENDARY PACK 739206", cx - buttonW / 2, y + 38, buttonW, b -> status = Config.redeem("739206"));
-                add("SPECIAL PACK 916482", cx - buttonW / 2, y + 66, buttonW, b -> status = Config.redeem("916482"));
-                add("EMOTE ANIMATIONS IN DEVELOPMENT", cx - buttonW / 2, y + 98, buttonW, b -> {});
-            }
+            case 4 -> initEmotes(cx, y, buttonW);
             case 5 -> initStore(cx, y, buttonW);
             case 6 -> {
                 add("MINECRAFT SETTINGS", cx - buttonW / 2, y + 10, buttonW,
@@ -225,6 +227,60 @@ public class LegendMenuScreen extends RedScreen {
                 });
     }
 
+    private void initEmotes(int cx, int y, int buttonW) {
+        int packY = y + 2;
+        int packW = Math.max(76, (buttonW - 8) / 3);
+        String[] labels = {"DANCES 854123", "LEGENDARY 739206", "SPECIAL 916482"};
+        for (int i = 0; i < 3; i++) {
+            final int pack = i;
+            add((emotePackIndex == i ? "• " : "") + labels[i],
+                    cx - (packW * 3 + 8) / 2 + i * (packW + 4), packY, packW,
+                    b -> { emotePackIndex = pack; rebuildWidgets(); });
+        }
+        int gridW = Math.min(500, width - 32);
+        int left = (width - gridW) / 2;
+        int gap = 5;
+        int cols = 3;
+        int itemW = (gridW - gap * (cols - 1)) / cols;
+        int startY = packY + 31;
+        boolean unlocked = Config.data.unlockedEmotePacks.contains(EMOTE_CODES[emotePackIndex]);
+        for (int i = 0; i < 15; i++) {
+            final String dance = EMOTE_PACKS[emotePackIndex][i];
+            int col = i % cols, row = i / cols;
+            int bx = left + col * (itemW + gap);
+            int by = startY + row * 27;
+            boolean selected = dance.equals(Config.data.selectedEmote);
+            boolean inWheel = Config.data.emoteWheel.contains(dance);
+            String label = (selected ? "◆ " : "") + dance + (inWheel ? "  ✓" : "");
+            add(unlocked ? label : "LOCKED • " + dance, bx, by, itemW, b -> {
+                if (!Config.data.unlockedEmotePacks.contains(EMOTE_CODES[emotePackIndex])) {
+                    status = "Redeem pack code " + EMOTE_CODES[emotePackIndex] + " in STORE";
+                    return;
+                }
+                Config.data.selectedEmote = dance;
+                Config.save();
+                status = "Selected " + dance + " • animation integration pending";
+                rebuildWidgets();
+            });
+        }
+        int actionY = height - 72;
+        String chosen = Config.data.selectedEmote;
+        add("ADD / REMOVE SELECTED FROM EMOTE WHEEL", cx - buttonW / 2, actionY, buttonW, b -> {
+            if (chosen == null || chosen.isBlank()) { status = "Select a dance first"; return; }
+            if (Config.data.emoteWheel.contains(chosen)) Config.data.emoteWheel.remove(chosen);
+            else if (Config.data.emoteWheel.size() < 8) Config.data.emoteWheel.add(chosen);
+            else { status = "Emote wheel is full (8 slots)"; return; }
+            Config.save();
+            status = "Emote wheel updated";
+            rebuildWidgets();
+        });
+        gStatusHint();
+    }
+
+    private void gStatusHint() {
+        // The selected dance is stored separately from its wheel assignment.
+    }
+
     private static int cosmeticPrice(Cosmetic item) {
         return Math.min(500, 100 + (Math.max(1, item.tier()) - 1) * 125);
     }
@@ -242,6 +298,11 @@ public class LegendMenuScreen extends RedScreen {
             status = Config.redeem(codeBox.getValue());
             codeBox.setValue("");
         });
+    }
+
+    @Override
+    public void openEmotes() {
+        this.tab = 4;
     }
 
     @Override
