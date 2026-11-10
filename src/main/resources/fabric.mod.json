@@ -8,7 +8,7 @@
     "LEGEND FPS"
   ],
   "environment": "client",
-  "entrypoints": {
+  "mixins": [\n    "legendfps.mixins.json"\n  ],\n  "entrypoints": {
     "client": [
       "com.legendfps.LegendFpsClient"
     ]
