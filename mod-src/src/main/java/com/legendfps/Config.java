@@ -47,7 +47,7 @@ public class Config {
         Map.entry("OW3-V6J-4QM", Cosmetic.Category.OUTERWEAR),
         Map.entry("WN8-R4K-2YP", Cosmetic.Category.WING),
         Map.entry("CP6-X9M-5QJ", Cosmetic.Category.CAPE),
-        Map.entry("PT7-H3V-8LA", Cosmetic.Category.PETS),
+        Map.entry("PT7-H3V-8LA", Cosmetic.Category.PETS)
     );
 
     public static void load() {
