@@ -34,32 +34,7 @@ jobs:
           # Apply Minecraft 1.21.11 source compatibility fixes after extracting the original ZIP.
           sed -i 's/import net.minecraft.client.ParticleStatus;/import net.minecraft.server.level.ParticleStatus;/' src/main/java/com/legendfps/PerformanceScreen.java
           sed -i 's/import net.minecraft.client.multiplayer.ServerAddress;/import net.minecraft.client.multiplayer.resolver.ServerAddress;/' src/main/java/com/legendfps/WorldInviteService.java
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("src/main/java/com/legendfps/LegendFpsClient.java")
-          s = p.read_text()
-          s = s.replace("import net.minecraft.client.gui.components.Button;\\n", "")
-          s = s.replace("import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;\\n", "")
-          block = """        // Add a LEGEND FPS shortcut to both the main menu and the pause menu.
-                  ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-                      if (screen instanceof TitleScreen || screen instanceof PauseScreen) {
-                          int buttonWidth = 112;
-                          int x = Math.max(6, screen.width - buttonWidth - 8);
-                          int y = screen instanceof TitleScreen ? 8 : Math.max(8, screen.height - 30);
-
-                          Button button = Button.builder(Component.literal("LEGEND FPS"), b ->
-                                          client.setScreen(new LegendMenuScreen(screen)))
-                                  .bounds(x, y, buttonWidth, 20)
-                                  .build();
-                          screen.addRenderableWidget(button);
-                      }
-                  });
-
-          """
-          if block not in s:
-              raise SystemExit("Could not locate the invalid ScreenEvents block; refusing a partial patch")
-          p.write_text(s.replace(block, ""))
-          PY
+          # Main-menu and pause-menu buttons are provided by the tracked client source overlay.
           # Fabric Loom 1.14.10 requires Gradle 9.2.0.
           sed -i 's/gradle-[0-9.]*-bin.zip/gradle-9.2.0-bin.zip/' gradle/wrapper/gradle-wrapper.properties
           grep 'distributionUrl=.*gradle-9.2.0-bin.zip' gradle/wrapper/gradle-wrapper.properties
