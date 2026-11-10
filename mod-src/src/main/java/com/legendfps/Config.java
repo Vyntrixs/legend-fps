@@ -48,7 +48,6 @@ public class Config {
         Map.entry("WN8-R4K-2YP", Cosmetic.Category.WING),
         Map.entry("CP6-X9M-5QJ", Cosmetic.Category.CAPE),
         Map.entry("PT7-H3V-8LA", Cosmetic.Category.PETS),
-        Map.entry("FX2-N6W-9ZR", Cosmetic.Category.AURA)
     );
 
     public static void load() {
@@ -97,6 +96,17 @@ public class Config {
             }
             data.redeemed.add(code); save();
             return "Unlocked " + added + " cosmetics";
+        }
+        if (code.equals("FX2-N6W-9ZR")) {
+            int added = 0;
+            for (Cosmetic.Category category : new Cosmetic.Category[]{
+                    Cosmetic.Category.AURA, Cosmetic.Category.TRAIL, Cosmetic.Category.HAND_TRAIL}) {
+                for (Cosmetic c : Cosmetic.in(category)) if (!data.owned.contains(c.id())) {
+                    data.owned.add(c.id()); added++;
+                }
+            }
+            data.redeemed.add(code); save();
+            return "Unlocked " + added + " particle and hand-trail cosmetics";
         }
         Cosmetic.Category category = CATEGORY_CODES.get(code);
         if (category != null) {
