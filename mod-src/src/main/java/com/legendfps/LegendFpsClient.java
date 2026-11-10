@@ -14,6 +14,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class LegendFpsClient implements ClientModInitializer {
     private static KeyMapping openKey;
+    private static KeyMapping emoteWheelKey;
 
     @Override
     public void onInitializeClient() {
@@ -38,11 +39,24 @@ public class LegendFpsClient implements ClientModInitializer {
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 KeyMapping.Category.MISC));
+        // This key is user-rebindable in Minecraft: Options > Controls.
+        emoteWheelKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key.legendfps.emote_wheel",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_B,
+                KeyMapping.Category.MISC));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openKey.consumeClick()) {
                 if (client.screen == null) {
                     client.setScreen(new LegendMenuScreen(null, true));
+                }
+            }
+            while (emoteWheelKey.consumeClick()) {
+                if (client.screen == null) {
+                    LegendMenuScreen menu = new LegendMenuScreen(null, true);
+                    menu.openEmotes();
+                    client.setScreen(menu);
                 }
             }
             CosmeticEffects.tick(client);
