@@ -30,6 +30,9 @@ public record Cosmetic(String id, String name, Category category, ParticleOption
 
     static {
         add(Category.WING, "wing_ember", "Ember Wings", ParticleTypes.FLAME);
+        add(Category.WING, "wing_crimson_small", "Crimson Feather Wings • Small", ParticleTypes.FLAME);
+        add(Category.WING, "wing_crimson_medium", "Crimson Feather Wings • Medium", ParticleTypes.FLAME);
+        add(Category.WING, "wing_crimson_large", "Crimson Feather Wings • Large", ParticleTypes.FLAME);
         add(Category.WING, "wing_frost", "Frost Wings", ParticleTypes.SNOWFLAKE);
         add(Category.WING, "wing_void", "Void Wings", ParticleTypes.PORTAL);
         add(Category.WING, "wing_angel", "Angel Wings", ParticleTypes.END_ROD);
