@@ -6,7 +6,6 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.GraphicsEnvironment;
-import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Files;
@@ -24,7 +23,7 @@ public final class SkinImport {
         return Files.isRegularFile(SKIN) ? SKIN : null;
     }
 
-    public static String importPng(Component parent) {
+    public static String importPng() {
         if (GraphicsEnvironment.isHeadless()) return "File picker unavailable in headless mode";
         AtomicReference<File> selected = new AtomicReference<>();
         try {
