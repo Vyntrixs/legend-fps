@@ -342,11 +342,12 @@ public class LegendMenuScreen extends RedScreen {
             g.drawCenteredString(font, button.getMessage(), bx + bw / 2, by + (bh - 8) / 2 + 1, textColor);
         }
         g.drawCenteredString(font, Component.literal("LEGEND FPS  •  " + Minecraft.getInstance().getUser().getName()), width / 2, 10, WHITE);
-        if (Minecraft.getInstance().player != null && width >= 560 && tab != 1 && tab != 2) {
+        if (Minecraft.getInstance().player != null && width >= 760 && tab != 1) {
             int c = width / 2 + Math.min(170, width / 4);
             int bottom = Math.min(height - 58, height / 2 + 100);
             InventoryScreen.renderEntityInInventoryFollowsMouse(g, c - 62, bottom, c + 62, bottom + 4, 68,
                     0.0F, c - mouseX, bottom - mouseY, Minecraft.getInstance().player);
+            if (tab == 2) g.drawCenteredString(font, Component.literal("WARDROBE PREVIEW"), c, bottom + 13, WHITE);
         }
         g.drawCenteredString(font, Component.literal("COINS " + Config.data.coins + "  •  OWNED " + Config.data.owned.size()),
                 width / 2, height - 12, GRAY);
