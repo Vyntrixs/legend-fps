@@ -187,8 +187,6 @@ public class LegendMenuScreen extends RedScreen {
                         Config.save();
                         rebuildWidgets();
                     });
-        } else {
-            gNoop();
         }
 
         int outfitY = height - 64;
