@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.legendfps.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "PlayerModelEmoteMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
