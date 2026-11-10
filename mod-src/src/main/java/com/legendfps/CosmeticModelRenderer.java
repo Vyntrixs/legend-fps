@@ -2,14 +2,12 @@ package com.legendfps;
 
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.renderer.OverlayTexture;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.EntityType;
@@ -30,8 +28,8 @@ public final class CosmeticModelRenderer {
                  net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?, ?> renderer,
                  LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper helper,
                  net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) -> {
-                    if (renderer instanceof PlayerRenderer playerRenderer) {
-                        helper.register(new Layer(playerRenderer));
+                    if (renderer instanceof AvatarRenderer<?> avatarRenderer) {
+                        helper.register(new Layer(avatarRenderer));
                     }
                 });
     }
@@ -120,7 +118,7 @@ public final class CosmeticModelRenderer {
                                   int light, float x, float y, float z) {
             pose.pushPose();
             pose.translate(x, y, z);
-            queue.submitBlock(pose, block, light, OverlayTexture.NO_OVERLAY, 0);
+            queue.submitBlock(pose, block, light, 0, 0);
             pose.popPose();
         }
 
