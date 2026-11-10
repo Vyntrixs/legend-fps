@@ -21,7 +21,7 @@ public final class SkinManagerScreen extends RedScreen {
     @Override
     protected void init() {
         int center = width / 2;
-        add("Copy official skin page link", center - 105, height - 76, 210, button -> {
+        add("IMPORT SKIN PNG", center - 105, height - 104, 210, button -> {\n            status = SkinImport.importPng(this);\n        });\n        add("Copy official skin page link", center - 105, height - 76, 210, button -> {
             Minecraft.getInstance().keyboardHandler.setClipboard(SKIN_PROFILE);
             status = "Skin profile link copied";
         });
