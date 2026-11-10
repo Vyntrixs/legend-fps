@@ -6,6 +6,7 @@ on:
     paths:
       - "LEGEND-FPS-2.1-SOURCE.zip"
       - ".github/workflows/extract-source.yml"
+      - "mod-src/**"
 
 permissions:
   contents: read
@@ -28,6 +29,8 @@ jobs:
           count="$(find _unpack -mindepth 1 -maxdepth 1 | wc -l)"
           if [ "$count" -eq 1 ] && [ -d "$first" ]; then cp -a "$first"/. .; else cp -a _unpack/. .; fi
           rm -rf _unpack
+          # Overlay tracked source changes after extracting the baseline project.
+          if [ -d mod-src ]; then cp -a mod-src/. .; fi
           # Apply Minecraft 1.21.11 source compatibility fixes after extracting the original ZIP.
           sed -i 's/import net.minecraft.client.ParticleStatus;/import net.minecraft.server.level.ParticleStatus;/' src/main/java/com/legendfps/PerformanceScreen.java
           sed -i 's/import net.minecraft.client.multiplayer.ServerAddress;/import net.minecraft.client.multiplayer.resolver.ServerAddress;/' src/main/java/com/legendfps/WorldInviteService.java
