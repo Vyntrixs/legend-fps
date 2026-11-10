@@ -37,6 +37,7 @@ jobs:
           sed -i 's/import net.minecraft.client.ParticleStatus;/import net.minecraft.server.level.ParticleStatus;/' src/main/java/com/legendfps/PerformanceScreen.java
           sed -i 's/import net.minecraft.client.multiplayer.ServerAddress;/import net.minecraft.client.multiplayer.resolver.ServerAddress;/' src/main/java/com/legendfps/WorldInviteService.java
           # Main-menu and pause-menu buttons are provided by the tracked client source overlay.
+          # Build verification after source overlay fixes.
           # Fabric Loom 1.14.10 requires Gradle 9.2.0.
           sed -i 's/gradle-[0-9.]*-bin.zip/gradle-9.2.0-bin.zip/' gradle/wrapper/gradle-wrapper.properties
           grep 'distributionUrl=.*gradle-9.2.0-bin.zip' gradle/wrapper/gradle-wrapper.properties
