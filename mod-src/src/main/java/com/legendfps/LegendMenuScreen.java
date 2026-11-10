@@ -2,6 +2,7 @@ package com.legendfps;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.network.chat.Component;
 
 public class LegendMenuScreen extends RedScreen {
@@ -16,6 +17,7 @@ public class LegendMenuScreen extends RedScreen {
         add("Wardrobe / Cosmetics", x, y, w, b -> minecraft.setScreen(new CosmeticsScreen(this))); y += 23;
         add("Coins & Redeem Codes", x, y, w, b -> minecraft.setScreen(new RedeemScreen(this))); y += 23;
         add("Performance", x, y, w, b -> minecraft.setScreen(new PerformanceScreen(this))); y += 23;
+        add("Minecraft Settings", x, y, w, b -> minecraft.setScreen(new OptionsScreen(this, minecraft.options))); y += 23;
         add("Effects: " + (Config.data.effects ? "ON" : "OFF"), x, y, w, b -> {
             Config.data.effects = !Config.data.effects; Config.save();
             b.setMessage(Component.literal("Effects: " + (Config.data.effects ? "ON" : "OFF")));
