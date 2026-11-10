@@ -7,7 +7,7 @@ import java.util.List;
 
 public record Cosmetic(String id, String name, Category category, ParticleOptions particle, int tier) {
     public enum Category {
-        WING("Wings"), CAPE("Capes"), HALO("Halos"), AURA("Auras"), TRAIL("Trails"),
+        WING("Wings"), CAPE("Capes"), HALO("Halos"), AURA("Auras"), TRAIL("Trails"), HAND_TRAIL("Hand Trails"),
         HAT("Hats"), HAIR("Hair"), FACE("Face"), EARS("Ears"), SHOULDERS("Shoulders"),
         ARMS("Arms & Gloves"), BACK("Back"), TOPS("Tops"), PANTS("Pants"),
         OUTFITS("Full Outfits"), SHOES("Shoes"), OUTERWEAR("Outerwear"), PETS("Pets");
@@ -69,6 +69,15 @@ public record Cosmetic(String id, String name, Category category, ParticleOption
         add(Category.TRAIL, "trail_petal", "Petal Trail", ParticleTypes.CHERRY_LEAVES);
         add(Category.TRAIL, "trail_star", "Star Trail", ParticleTypes.END_ROD);
         add(Category.TRAIL, "trail_green", "Green Trail", ParticleTypes.HAPPY_VILLAGER);
+
+        add(Category.HAND_TRAIL, "hand_flame", "Flame Hand Trail", ParticleTypes.FLAME);
+        add(Category.HAND_TRAIL, "hand_soul", "Soul Hand Trail", ParticleTypes.SOUL_FIRE_FLAME);
+        add(Category.HAND_TRAIL, "hand_lightning", "Lightning Hand Trail", ParticleTypes.ELECTRIC_SPARK);
+        add(Category.HAND_TRAIL, "hand_magic", "Arcane Hand Trail", ParticleTypes.ENCHANT);
+        add(Category.HAND_TRAIL, "hand_heart", "Heart Hand Trail", ParticleTypes.HEART);
+        add(Category.HAND_TRAIL, "hand_frost", "Frost Hand Trail", ParticleTypes.SNOWFLAKE);
+        add(Category.HAND_TRAIL, "hand_void", "Void Hand Trail", ParticleTypes.PORTAL);
+        add(Category.HAND_TRAIL, "hand_star", "Star Hand Trail", ParticleTypes.END_ROD);
 
         String[] first = {"Crimson","Obsidian","Royal","Dragon","Nether","End","Glacier","Inferno","Storm","Sakura","Void","Emerald","Galaxy","Shadow","Legend"};
         String[] second = {"Aurora","Sunset","Ocean","Desert","Forest","Lightning","Soul","Angel","Demon","Cyber","Pixel","Titan","Phantom","Champion","Vyntrix"};
