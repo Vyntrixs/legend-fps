@@ -1,37 +1,120 @@
 package com.legendfps;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.network.chat.Component;
 
 public class LegendMenuScreen extends RedScreen {
-    public LegendMenuScreen(Screen parent) { super("LEGEND FPS", parent); }
-    @Override protected void init() {
-        int panelWidth = Math.min(330, this.width - 24);
-        int x = (this.width - panelWidth) / 2 + 10;
-        int y = Math.max(40, this.height / 2 - 91);
-        int w = panelWidth - 20;
-        add("Friends", x, y, w, b -> minecraft.setScreen(new FriendsScreen(this))); y += 23;
-        add("Invite to World", x, y, w, b -> minecraft.setScreen(new FriendsScreen(this, true))); y += 23;
-        add("Wardrobe / Cosmetics", x, y, w, b -> minecraft.setScreen(new CosmeticsScreen(this))); y += 23;
-        add("Coins & Redeem Codes", x, y, w, b -> minecraft.setScreen(new RedeemScreen(this))); y += 23;
-        add("Performance", x, y, w, b -> minecraft.setScreen(new PerformanceScreen(this))); y += 23;
-        add("Minecraft Settings", x, y, w, b -> minecraft.setScreen(new OptionsScreen(this, minecraft.options))); y += 23;
-        add("Effects: " + (Config.data.effects ? "ON" : "OFF"), x, y, w, b -> {
-            Config.data.effects = !Config.data.effects; Config.save();
-            b.setMessage(Component.literal("Effects: " + (Config.data.effects ? "ON" : "OFF")));
-        }); y += 25;
-        add("Back", x, y, w, b -> onClose());
+    private final boolean pauseMode;
+
+    public LegendMenuScreen(Screen parent) {
+        this(parent, false);
     }
-    @Override public void renderBackground(GuiGraphics g, int mx, int my, float d) {
-        super.renderBackground(g, mx, my, d);
-        int w=Math.min(350,this.width-16), l=(this.width-w)/2, t=30, bot=this.height-20;
-        g.fill(l,t,l+w,bot,0xF20A0A0D); g.fill(l,t,l+w,t+2,RED); g.fill(l,bot-2,l+w,bot,RED);
+
+    public LegendMenuScreen(Screen parent, boolean pauseMode) {
+        super(pauseMode ? "LEGEND MENU" : "LEGEND FPS", parent);
+        this.pauseMode = pauseMode;
     }
-    @Override public void render(GuiGraphics g,int mx,int my,float d) {
-        super.render(g,mx,my,d);
-        g.drawCenteredString(font,Component.literal("SOCIAL  •  WARDROBE  •  PERFORMANCE"),width/2,20,WHITE);
-        g.drawCenteredString(font,Component.literal("Coins: "+Config.data.coins+"  |  Owned: "+Config.data.owned.size()),width/2,height-13,GRAY);
+
+    @Override
+    protected void init() {
+        int columns = width >= 560 ? 2 : 1;
+        int buttonWidth = columns == 2 ? Math.min(190, (width - 70) / 2) : Math.min(230, width - 44);
+        int gap = 10;
+        int totalWidth = columns * buttonWidth + (columns - 1) * gap;
+        int startX = (width - totalWidth) / 2;
+        int startY = pauseMode ? Math.max(78, height / 2 - 100) : Math.max(76, height / 2 - 118);
+        int rowGap = 27;
+        int index = 0;
+
+        if (pauseMode) {
+            addAt("RESUME", index++, columns, startX, startY, buttonWidth, rowGap,
+                    b -> Minecraft.getInstance().setScreen(null));
+        } else {
+            addAt("SINGLEPLAYER", index++, columns, startX, startY, buttonWidth, rowGap,
+                    b -> Minecraft.getInstance().setScreen(new SelectWorldScreen(this)));
+            addAt("MULTIPLAYER", index++, columns, startX, startY, buttonWidth, rowGap,
+                    b -> Minecraft.getInstance().setScreen(new JoinMultiplayerScreen(this)));
+        }
+
+        addAt("FRIENDS", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new FriendsScreen(this)));
+        addAt("INVITE FRIEND", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new FriendsScreen(this, true)));
+        addAt("WARDROBE", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new CosmeticsScreen(this)));
+        addAt("SKIN MANAGER", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new SkinManagerScreen(this)));
+        addAt("PERFORMANCE", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new PerformanceScreen(this)));
+        addAt("COINS & REDEEM", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new RedeemScreen(this)));
+        addAt("SETTINGS", index++, columns, startX, startY, buttonWidth, rowGap,
+                b -> Minecraft.getInstance().setScreen(new OptionsScreen(this, Minecraft.getInstance().options)));
+
+        if (pauseMode) {
+            addAt("DISCONNECT", index++, columns, startX, startY, buttonWidth, rowGap,
+                    b -> Minecraft.getInstance().disconnect(new TitleScreen(), false));
+        } else {
+            addAt("QUIT GAME", index++, columns, startX, startY, buttonWidth, rowGap,
+                    b -> Minecraft.getInstance().stop());
+        }
+    }
+
+    private void addAt(String label, int index, int columns, int startX, int startY,
+                       int buttonWidth, int rowGap, net.minecraft.client.gui.components.Button.OnPress action) {
+        int col = index % columns;
+        int row = index / columns;
+        add(label, startX + col * (buttonWidth + 10), startY + row * rowGap, buttonWidth, action);
+    }
+
+    @Override
+    public void onClose() {
+        if (pauseMode) {
+            Minecraft.getInstance().setScreen(null);
+        } else if (parent != null) {
+            super.onClose();
+        } else {
+            Minecraft.getInstance().setScreen(new TitleScreen());
+        }
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float delta) {
+        super.renderBackground(g, mouseX, mouseY, delta);
+        int panelWidth = Math.min(560, width - 20);
+        int left = (width - panelWidth) / 2;
+        int top = 34;
+        int bottom = height - 24;
+        g.fill(left, top, left + panelWidth, bottom, 0xF20A0A0D);
+        g.fill(left, top, left + panelWidth, top + 3, RED);
+        g.fill(left, bottom - 3, left + panelWidth, bottom, RED);
+        g.fill(left, top, left + 2, bottom, 0xFF5A1018);
+        g.fill(left + panelWidth - 2, top, left + panelWidth, bottom, 0xFF5A1018);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+        super.render(g, mouseX, mouseY, delta);
+        g.drawCenteredString(font, Component.literal("SOCIAL  •  WARDROBE  •  SKINS  •  PERFORMANCE"),
+                width / 2, 19, WHITE);
+        if (Minecraft.getInstance().player != null && width >= 560) {
+            int centerX = width / 2 + Math.min(170, width / 4);
+            int bottom = Math.min(height - 55, height / 2 + 110);
+            InventoryScreen.renderEntityInInventoryFollowsMouse(
+                    g, centerX - 70, bottom, centerX + 70, bottom + 4, 76,
+                    0.0F, centerX - mouseX, bottom - mouseY, Minecraft.getInstance().player);
+            g.drawCenteredString(font, Component.literal(Minecraft.getInstance().getUser().getName()),
+                    centerX, bottom + 8, GRAY);
+        }
+        g.drawCenteredString(font,
+                Component.literal("LEGEND COINS  " + Config.data.coins + "   •   OWNED " + Config.data.owned.size()),
+                width / 2, height - 14, GRAY);
     }
 }
