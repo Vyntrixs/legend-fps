@@ -18,6 +18,7 @@ public class LegendFpsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Config.load();
+        CosmeticModelRenderer.register();
         if (Config.data.relayUrl != null && !Config.data.relayUrl.isBlank()) SocialService.start();
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> WorldInviteService.observeGameMessage(message));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldInviteService.reset());
