@@ -53,3 +53,5 @@ jobs:
           name: LEGEND-FPS-build
           path: "**/build/libs/*.jar"
           if-no-files-found: error
+
+# Rebuild after correcting escaped newlines in SkinManagerScreen.java.
