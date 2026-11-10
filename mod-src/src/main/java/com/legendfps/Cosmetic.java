@@ -2,31 +2,33 @@ package com.legendfps;
 
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public record Cosmetic(String id, String name, Category category, ParticleOptions particle, int tier) {
-
     public enum Category {
-        WING("Wings"), CAPE("Capes"), HALO("Halos"), AURA("Auras"), TRAIL("Trails");
+        WING("Wings"), CAPE("Capes"), HALO("Halos"), AURA("Auras"), TRAIL("Trails"),
+        HAT("Hats"), HAIR("Hair"), FACE("Face"), EARS("Ears"), SHOULDERS("Shoulders"),
+        ARMS("Arms & Gloves"), BACK("Back"), TOPS("Tops"), PANTS("Pants"),
+        OUTFITS("Full Outfits"), SHOES("Shoes"), OUTERWEAR("Outerwear"), PETS("Pets");
         public final String label;
         Category(String label) { this.label = label; }
     }
 
     public static final int TIER1_COUNT = 26;
     public static final List<Cosmetic> ALL = new ArrayList<>();
-
     private static void add(Category c, String id, String name, ParticleOptions p) {
         ALL.add(new Cosmetic(id, name, c, p, ALL.size() < TIER1_COUNT ? 1 : 2));
     }
-
     private static void addCape(String id, String name, int tier) {
         ALL.add(new Cosmetic(id, name, Category.CAPE, ParticleTypes.CLOUD, tier));
     }
+    private static void addSet(Category c, String prefix, String... names) {
+        for (int i = 0; i < names.length; i++)
+            add(c, prefix + "_" + (i + 1), names[i], ParticleTypes.END_ROD);
+    }
 
     static {
-        // Existing wing/halo/aura/trail cosmetics and their original unlock tiers.
         add(Category.WING, "wing_ember", "Ember Wings", ParticleTypes.FLAME);
         add(Category.WING, "wing_frost", "Frost Wings", ParticleTypes.SNOWFLAKE);
         add(Category.WING, "wing_void", "Void Wings", ParticleTypes.PORTAL);
@@ -68,37 +70,24 @@ public record Cosmetic(String id, String name, Category category, ParticleOption
         add(Category.TRAIL, "trail_star", "Star Trail", ParticleTypes.END_ROD);
         add(Category.TRAIL, "trail_green", "Green Trail", ParticleTypes.HAPPY_VILLAGER);
 
-        // 30 cape designs: the first 15 use 200090, the next 15 use 200167.
-        addCape("cape_crimson", "Crimson", 3);
-        addCape("cape_obsidian", "Obsidian", 3);
-        addCape("cape_royal", "Royal", 3);
-        addCape("cape_dragon", "Dragon", 3);
-        addCape("cape_nether", "Nether", 3);
-        addCape("cape_end", "End", 3);
-        addCape("cape_ice", "Glacier", 3);
-        addCape("cape_flame", "Inferno", 3);
-        addCape("cape_storm", "Storm", 3);
-        addCape("cape_sakura", "Sakura", 3);
-        addCape("cape_void", "Void", 3);
-        addCape("cape_emerald", "Emerald", 3);
-        addCape("cape_galaxy", "Galaxy", 3);
-        addCape("cape_shadow", "Shadow", 3);
-        addCape("cape_legend", "Legend", 3);
-        addCape("cape_aurora", "Aurora", 4);
-        addCape("cape_sunset", "Sunset", 4);
-        addCape("cape_ocean", "Ocean", 4);
-        addCape("cape_desert", "Desert", 4);
-        addCape("cape_forest", "Forest", 4);
-        addCape("cape_lightning", "Lightning", 4);
-        addCape("cape_soul", "Soul", 4);
-        addCape("cape_angel", "Angel", 4);
-        addCape("cape_demon", "Demon", 4);
-        addCape("cape_cyber", "Cyber", 4);
-        addCape("cape_pixel", "Pixel", 4);
-        addCape("cape_titan", "Titan", 4);
-        addCape("cape_phantom", "Phantom", 4);
-        addCape("cape_champion", "Champion", 4);
-        addCape("cape_vyntrix", "Vyntrix", 4);
+        String[] first = {"Crimson","Obsidian","Royal","Dragon","Nether","End","Glacier","Inferno","Storm","Sakura","Void","Emerald","Galaxy","Shadow","Legend"};
+        String[] second = {"Aurora","Sunset","Ocean","Desert","Forest","Lightning","Soul","Angel","Demon","Cyber","Pixel","Titan","Phantom","Champion","Vyntrix"};
+        for (int i=0;i<first.length;i++) addCape("cape_"+first[i].toLowerCase(), first[i], 3);
+        for (int i=0;i<second.length;i++) addCape("cape_"+second[i].toLowerCase(), second[i], 4);
+
+        addSet(Category.HAT,"hat","Crimson Crown","Shadow Hood","Frost Beanie","Dragon Helm","Royal Cap");
+        addSet(Category.HAIR,"hair","Spiky Black","Silver Flow","Crimson Fade","Midnight Fringe","Neon Hair");
+        addSet(Category.FACE,"face","Red Visor","Phantom Mask","Pixel Shades","Cyber Mask","Star Glasses");
+        addSet(Category.EARS,"ears","Fox Ears","Cat Ears","Dragon Horns","Neon Headset");
+        addSet(Category.SHOULDERS,"shoulder","Mini Dragon","Shoulder Flame","Raven","Frost Spirit");
+        addSet(Category.ARMS,"arms","Crimson Gloves","Cyber Bracers","Shadow Wraps","Golden Gauntlets");
+        addSet(Category.BACK,"back","Explorer Pack","Dragon Pack","Jet Pack","Void Backpack");
+        addSet(Category.TOPS,"top","Legend Hoodie","Crimson Jacket","Cyber Shirt","Royal Tunic");
+        addSet(Category.PANTS,"pants","Shadow Pants","Crimson Trousers","Cyber Pants","Royal Pants");
+        addSet(Category.OUTFITS,"outfit","Vyntrix Suit","Dragon Knight","Cyber Legend","Shadow Assassin");
+        addSet(Category.SHOES,"shoes","Flame Boots","Neon Sneakers","Royal Boots","Frost Shoes");
+        addSet(Category.OUTERWEAR,"outer","Long Crimson Coat","Phantom Cloak","Frost Jacket","Dragon Mantle");
+        addSet(Category.PETS,"pet","Mini Dragon","Floating Slime","Baby Phantom","Tiny Bee","Pixel Fox");
     }
 
     public static List<Cosmetic> in(Category cat) {
@@ -106,7 +95,6 @@ public record Cosmetic(String id, String name, Category category, ParticleOption
         for (Cosmetic c : ALL) if (c.category() == cat) out.add(c);
         return out;
     }
-
     public static Cosmetic equipped(Category cat) {
         String id = Config.data.equipped.get(cat.name());
         if (id == null) return null;
