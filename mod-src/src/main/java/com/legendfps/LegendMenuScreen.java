@@ -17,6 +17,7 @@ public class LegendMenuScreen extends RedScreen {
     private int tab = 0;
     private int categoryIndex = 0;
     private String selectedFriend;
+    private String selectedCosmeticId;
     private EditBox nameBox;
     private EditBox codeBox;
 
@@ -118,31 +119,97 @@ public class LegendMenuScreen extends RedScreen {
     private void initWardrobe(int x, int y, int w) {
         Cosmetic.Category[] categories = Cosmetic.Category.values();
         Cosmetic.Category cat = categories[categoryIndex % categories.length];
-        add("‹", x, y, 34, b -> { categoryIndex = (categoryIndex + categories.length - 1) % categories.length; rebuildWidgets(); });
-        add(cat.label + "  (" + (categoryIndex + 1) + "/" + categories.length + ")", x + 38, y, Math.max(70, w - 76), b -> {});
-        add("›", x + w - 34, y, 34, b -> { categoryIndex = (categoryIndex + 1) % categories.length; rebuildWidgets(); });
+        int sideW = Math.max(78, Math.min(112, w / 4));
+        int gap = 7;
+        int contentX = x + sideW + gap;
+        int contentW = Math.max(80, w - sideW - gap);
+        int rowH = 22;
+
+        // Category rail, similar to the Essential wardrobe.
+        int visibleCategories = Math.min(categories.length, Math.max(5, (height - y - 112) / rowH));
+        int firstCategory = Math.max(0, Math.min(categoryIndex - visibleCategories / 2,
+                categories.length - visibleCategories));
+        for (int i = 0; i < visibleCategories; i++) {
+            int index = firstCategory + i;
+            Cosmetic.Category c = categories[index];
+            add((index == categoryIndex ? "› " : "") + c.label, x, y + i * rowH,
+                    sideW, b -> { categoryIndex = index; selectedCosmeticId = null; rebuildWidgets(); });
+        }
+
         List<Cosmetic> items = Cosmetic.in(cat);
-        int rowY = y + 28;
-        int max = Math.max(1, Math.min(7, (height - rowY - 62) / 22));
-        for (int i = 0; i < Math.min(max, items.size()); i++) {
+        int cols = contentW >= 330 ? 3 : contentW >= 210 ? 2 : 1;
+        int cardGap = 4;
+        int cardW = Math.max(64, (contentW - cardGap * (cols - 1)) / cols);
+        int cardY = y + 2;
+        int cardH = 43;
+        int maxRows = Math.max(1, Math.min(5, (height - cardY - 100) / (cardH + cardGap)));
+        int maxItems = cols * maxRows;
+        for (int i = 0; i < Math.min(items.size(), maxItems); i++) {
             Cosmetic item = items.get(i);
+            int col = i % cols;
+            int row = i / cols;
+            int bx = contentX + col * (cardW + cardGap);
+            int by = cardY + row * (cardH + cardGap);
             boolean owned = Config.owns(item.id());
             boolean equipped = item.id().equals(Config.data.equipped.get(cat.name()));
-            String label = item.name() + (equipped ? "  [EQUIPPED]" : owned ? "  [OWNED]" : "  [LOCKED]");
-            add(label, x, rowY, w, b -> {
-                if (!Config.owns(item.id())) {
-                    status = Config.buy(item, 250) ? "Purchased " + item.name() : "Not enough coins";
-                } else {
-                    if (item.id().equals(Config.data.equipped.get(cat.name()))) Config.data.equipped.remove(cat.name());
-                    else Config.data.equipped.put(cat.name(), item.id());
-                    Config.save();
-                    status = "Updated outfit";
-                }
-                rebuildWidgets();
-            });
-            rowY += 22;
+            String prefix = selectedCosmeticId != null && selectedCosmeticId.equals(item.id()) ? "◆ " : "";
+            String suffix = equipped ? " ✓" : owned ? " •" : "";
+            add(prefix + item.name() + suffix, bx, by, cardW,
+                    b -> { selectedCosmeticId = item.id(); status = item.name() + (owned ? " • OWNED" : " • " + item.tier() + " TIER"); rebuildWidgets(); });
         }
+
+        int actionY = height - 92;
+        Cosmetic selected = null;
+        if (selectedCosmeticId != null) {
+            for (Cosmetic item : items) if (item.id().equals(selectedCosmeticId)) selected = item;
+        }
+        if (selected != null) {
+            final Cosmetic item = selected;
+            boolean owned = Config.owns(item.id());
+            add(owned ? "EQUIP / UNEQUIP" : "PURCHASE • 250", contentX, actionY,
+                    Math.max(80, (contentW - 8) / 2), b -> {
+                        if (!Config.owns(item.id())) {
+                            status = Config.buy(item, 250) ? "Purchased " + item.name() : "Not enough coins";
+                        } else {
+                            if (item.id().equals(Config.data.equipped.get(cat.name()))) Config.data.equipped.remove(cat.name());
+                            else Config.data.equipped.put(cat.name(), item.id());
+                            Config.save();
+                            status = "Outfit updated";
+                        }
+                        rebuildWidgets();
+                    });
+            add(Config.data.favorites.contains(item.id()) ? "♥ FAVORITE" : "♡ FAVORITE",
+                    contentX + Math.max(80, (contentW - 8) / 2) + 8, actionY,
+                    Math.max(70, (contentW - 8) / 2), b -> {
+                        if (Config.data.favorites.contains(item.id())) Config.data.favorites.remove(item.id());
+                        else Config.data.favorites.add(item.id());
+                        Config.save();
+                        rebuildWidgets();
+                    });
+        } else {
+            gNoop();
+        }
+
+        int outfitY = height - 64;
+        add("SAVE OUTFIT", contentX, outfitY, Math.max(70, (contentW - 5) / 2), b -> {
+            if (Config.data.outfits.size() >= 128) { status = "All 128 outfit slots are full"; return; }
+            Config.data.outfits.add(new java.util.HashMap<>(Config.data.equipped));
+            Config.data.outfitNames.add("Outfit " + (Config.data.outfits.size()));
+            Config.save();
+            status = "Outfit saved (" + Config.data.outfits.size() + "/128)";
+        });
+        add("LOAD OUTFIT 1", contentX + Math.max(70, (contentW - 5) / 2) + 5, outfitY,
+                Math.max(70, (contentW - 5) / 2), b -> {
+                    if (Config.data.outfits.isEmpty()) { status = "No saved outfits yet"; return; }
+                    Config.data.equipped.clear();
+                    Config.data.equipped.putAll(Config.data.outfits.get(0));
+                    Config.save();
+                    status = "Outfit 1 loaded";
+                    rebuildWidgets();
+                });
     }
+
+    private void gNoop() { }
 
     private void initStore(int cx, int y, int buttonW) {
         codeBox = new EditBox(font, cx - buttonW / 2, y + 8, buttonW, 20, Component.literal("Redeem code"));
