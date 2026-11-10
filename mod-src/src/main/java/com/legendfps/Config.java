@@ -19,6 +19,9 @@ public class Config {
         public List<Map<String, String>> outfits = new ArrayList<>();
         public Map<String, String> equipped = new HashMap<>();
         public Map<String, String> previewed = new HashMap<>();
+        public List<String> unlockedEmotePacks = new ArrayList<>();
+        public List<String> emoteWheel = new ArrayList<>();
+        public String selectedEmote = "";
         public int coins = 0;
         public boolean effects = true;
         public String relayUrl = "";
@@ -66,6 +69,9 @@ public class Config {
         if (data.outfits == null) data.outfits = new ArrayList<>();
         if (data.equipped == null) data.equipped = new HashMap<>();
         if (data.previewed == null) data.previewed = new HashMap<>();
+        if (data.unlockedEmotePacks == null) data.unlockedEmotePacks = new ArrayList<>();
+        if (data.emoteWheel == null) data.emoteWheel = new ArrayList<>();
+        if (data.selectedEmote == null) data.selectedEmote = "";
         if (data.coins < 0) data.coins = 0;
         if (data.relayUrl == null) data.relayUrl = "";
         if (data.relayToken == null) data.relayToken = "";
@@ -120,7 +126,10 @@ public class Config {
             return "Unlocked " + added + " " + category.label;
         }
         if (code.equals("854123") || code.equals("739206") || code.equals("916482")) {
-            return "Emote pack code reserved - emote animations are not implemented yet";
+            data.unlockedEmotePacks.add(code);
+            data.redeemed.add(code);
+            save();
+            return "Unlocked emote pack " + code + " • 15 dances added";
         }
         if (code.equals("X9Q-V7K-2MZ-84R")) {
             return "Owner code is locked until secure owner-account verification is configured";
