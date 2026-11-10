@@ -300,7 +300,6 @@ public class LegendMenuScreen extends RedScreen {
         });
     }
 
-    @Override
     public void openEmotes() {
         this.tab = 4;
     }
