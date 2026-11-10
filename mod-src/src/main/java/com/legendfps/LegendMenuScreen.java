@@ -79,9 +79,12 @@ public class LegendMenuScreen extends RedScreen {
             case 1 -> initSocial(left + 12, y, panelW - 24);
             case 2 -> initWardrobe(left + 12, y, panelW - 24);
             case 3 -> {
-                add("OPEN OFFICIAL SKIN PROFILE", cx - buttonW / 2, y + 12, buttonW,
+                add("OPEN SKIN MANAGER", cx - buttonW / 2, y + 12, buttonW,
+                        b -> Minecraft.getInstance().setScreen(new SkinManagerScreen(this)));
+                add("IMPORT CUSTOM PNG", cx - buttonW / 2, y + 42, buttonW,
+                        b -> status = SkinImport.importPng(this));
+                add("OFFICIAL ACCOUNT SKIN PAGE", cx - buttonW / 2, y + 72, buttonW,
                         b -> { Minecraft.getInstance().keyboardHandler.setClipboard("https://www.minecraft.net/msaprofile/mygames/editskin"); status = "Official skin page link copied"; });
-                add("SKIN PNG IMPORT IS NOT READY", cx - buttonW / 2, y + 42, buttonW, b -> status = "PNG importing is still being integrated");
             }
             case 4 -> initEmotes(cx, y, buttonW);
             case 5 -> initStore(cx, y, buttonW);
