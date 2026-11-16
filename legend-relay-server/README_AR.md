@@ -4,11 +4,11 @@
 
 ## نشر الخدمة بضغطة واحدة
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Vyntrixs/legend-fps)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Vyntrixs/legend-fps/tree/cosmetics-foundation)
 
 1. اضغط زر **Deploy to Render** وسجّل الدخول إلى حساب Render.
-2. وافق على إنشاء الخدمة من ملف `render.yaml` الموجود في المستودع.
-3. انتظر حتى تصبح الخدمة بحالة **Live**. سيظهر لك عنوان مثل `https://legend-fps-relay.onrender.com`.
+2. تأكد أن الفرع المختار هو `cosmetics-foundation` وأن ملف Blueprint هو `render.yaml`.
+3. راجع الخدمة ثم وافق على إنشائها. انتظر حتى تصبح الخدمة بحالة **Live**. سيظهر لك عنوان مثل `https://legend-fps-relay.onrender.com`.
 4. افتح إعدادات الخدمة ثم **Environment**، وانسخ قيمة `LEGEND_RELAY_TOKEN`. لا ترسلها علناً.
 5. في Minecraft افتح LEGEND FPS ← Friends ← Relay، ثم أدخل:
    - **Relay URL:** `wss://اسم-الخدمة.onrender.com/ws`
@@ -40,6 +40,7 @@ LEGEND_RELAY_TOKEN=choose-a-long-random-value npm start
 
 ## ملاحظات مهمة
 - الضغط على زر النشر يحتاج موافقتك وتسجيل دخولك إلى Render؛ لا يمكن للمستودع أو ChatGPT إنشاء خدمة داخل حسابك دون ذلك.
+- الخدمة مضبوطة على عدم إعادة النشر تلقائياً عند كل تعديل في المستودع، حتى لا تؤثر تحديثات المود على نسخة Relay التي نشرتها.
 - الخطة المجانية قد توقف الخدمة عند عدم الاستخدام، وقد يستغرق أول اتصال بعد الاستيقاظ بعض الوقت.
 - التخزين على الخطة المجانية مؤقت؛ قد تضيع طلبات الصداقة المعلقة بعد إعادة التشغيل. يحتفظ المود بنسخة محلية من قائمة الأصدقاء ويحاول استعادتها عندما يتصل الطرفان.
 - لحفظ البيانات بشكل دائم قد تحتاج إلى استضافة توفر قرصاً دائماً، وقد تكون مدفوعة.
