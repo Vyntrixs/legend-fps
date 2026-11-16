@@ -57,8 +57,8 @@ public final class AccountService {
         if (raw.isEmpty()) raw = "wss://legend-fps-relay.onrender.com/ws";
         raw = raw.replaceFirst("/ws/?$", "");
         if (raw.startsWith("wss://")) return "https://" + raw.substring(6);
-        if (raw.startsWith("ws://")) return "http://" + raw.substring(5);
-        return raw;
+        if (raw.startsWith("https://")) return raw;
+        return "";
     }
 
     private static void request(String path, String method, JsonObject body, String token, Consumer<Result> done) {
