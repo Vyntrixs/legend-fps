@@ -25,8 +25,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: legend-relay-server/package-lock.json
       - name: Test relay server
         working-directory: legend-relay-server
         run: |
