@@ -168,7 +168,7 @@ public class FriendsScreen extends RedScreen {
         y += 30;
         add("Save & Connect", x, y, panel, b -> {
             String value = relayBox.getValue().trim();
-            if (!value.startsWith("wss://") && !value.startsWith("ws://")) {
+            if (!value.startsWith("wss://")) {
                 status = "Relay URL must start with wss://";
                 return;
             }
