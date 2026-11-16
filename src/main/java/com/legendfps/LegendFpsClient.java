@@ -18,7 +18,7 @@ public class LegendFpsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Config.load();
-        if (Config.data.relayUrl != null && !Config.data.relayUrl.isBlank()) SocialService.start();
+        
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> WorldInviteService.observeGameMessage(message));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldInviteService.reset());
 
@@ -34,7 +34,7 @@ public class LegendFpsClient implements ClientModInitializer {
                     client.setScreen(new LegendMenuScreen(null));
                 }
             }
-            CosmeticEffects.tick(client);
+            AccountService.tick(client);\n            CosmeticEffects.tick(client);
             WorldInviteService.tick(client);
             SocialService.pumpInvites(client);
         });
