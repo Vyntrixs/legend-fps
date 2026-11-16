@@ -45,6 +45,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Publish latest download
+        if: github.ref == 'refs/heads/cosmetics-foundation'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
