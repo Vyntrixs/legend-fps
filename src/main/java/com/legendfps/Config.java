@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Config {
+    private static final String DEFAULT_RELAY_URL = "wss://legend-fps-relay.onrender.com/ws";
     public static class Data {
         public List<String> owned = new ArrayList<>();
         public List<String> redeemed = new ArrayList<>();
@@ -45,7 +46,7 @@ public class Config {
         if (data.redeemed == null) data.redeemed = new ArrayList<>();
         if (data.friends == null) data.friends = new ArrayList<>();
         if (data.equipped == null) data.equipped = new HashMap<>();
-        if (data.relayUrl == null) data.relayUrl = "";
+        if (data.relayUrl == null || data.relayUrl.isBlank()) data.relayUrl = DEFAULT_RELAY_URL;
         if (data.relayToken == null) data.relayToken = "";
         if (data.secret == null || data.secret.length() < 16) data.secret = java.util.UUID.randomUUID().toString();
         if (data.deviceId == null || data.deviceId.isBlank()) data.deviceId = java.util.UUID.randomUUID().toString();
