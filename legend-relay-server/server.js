@@ -241,6 +241,7 @@ wss.on('connection', (ws) => {
     }
     // Compatibility for the previous build; new builds must use account sessions.
     if (p.type === 'register') {
+      if (dbReady) { send(ws, { type: 'error', message: 'This relay requires a LEGEND FPS account session' }); return ws.close(1008, 'account session required'); }
       if (TOKEN && p.token !== TOKEN) return ws.close(1008, 'invalid relay token');
       const name = String(p.name || '').trim(), secret = String(p.secret || '');
       if (!MC_NAME_RE.test(name) || !/^[A-Za-z0-9-]{16,64}$/.test(secret)) return ws.close(1008, 'invalid identity');
