@@ -171,8 +171,8 @@ public final class SocialService {
             switch (type) {
                 case "registered" -> { registered = true; setStatus("Connected as " + p.get("name").getAsString()); }
                 case "players" -> {
-                    List<String> p = names(p.getAsJsonArray("players"));
-                    publicPlayers = List.copyOf(p);
+                    List<String> playerNames = names(p.getAsJsonArray("players"));
+                    publicPlayers = List.copyOf(playerNames);
                     version++;
                 }
                 case "state" -> {
