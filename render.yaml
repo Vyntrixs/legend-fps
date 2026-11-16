@@ -13,3 +13,5 @@ services:
     envVars:
       - key: LEGEND_RELAY_TOKEN
         generateValue: true
+      - key: DATABASE_URL
+        sync: false
