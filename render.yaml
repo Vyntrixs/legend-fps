@@ -6,6 +6,7 @@ services:
     rootDir: legend-relay-server
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: LEGEND_RELAY_TOKEN
         generateValue: true
