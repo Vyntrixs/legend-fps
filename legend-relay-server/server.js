@@ -16,6 +16,11 @@ const NAME_RE = /^[A-Za-z0-9_]{1,16}$/;
 const SECRET_RE = /^[A-Za-z0-9-]{16,64}$/;
 // Only real e4mc hostnames are accepted as invite addresses.
 const ADDR_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.e4mc\.link(?::[0-9]{1,5})?$/i;
+const validAddress = (value) => {
+  if (!ADDR_RE.test(value)) return false;
+  const port = value.match(/:(\\d+)$/);
+  return !port || (Number(port[1]) >= 1 && Number(port[1]) <= 65535);
+};
 
 // users: key(lowercase name) -> { name, secretHash, friends:[keys], incoming:[keys], outgoing:[keys] }
 let users = {};
@@ -69,8 +74,12 @@ const pushPublicPlayers = () => {
 };
 
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'content-type': 'text/plain' });
-  res.end('LEGEND FPS relay v2.1 online');
+  if (req.url === '/health' || req.url === '/') {
+    res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' });
+    return res.end('LEGEND FPS relay v2.2 online');
+  }
+  res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+  res.end('Not found');
 });
 const wss = new WebSocket.Server({ server, path: '/ws', maxPayload: 4096 });
 
