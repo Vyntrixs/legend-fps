@@ -34,7 +34,8 @@ public class LegendFpsClient implements ClientModInitializer {
                     client.setScreen(new LegendMenuScreen(null));
                 }
             }
-            AccountService.tick(client);\n            CosmeticEffects.tick(client);
+            AccountService.tick(client);
+            CosmeticEffects.tick(client);
             WorldInviteService.tick(client);
             SocialService.pumpInvites(client);
         });
