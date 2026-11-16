@@ -32,8 +32,7 @@ public final class AccountScreen extends RedScreen {
         y += 25;
         add(registerMode ? "I already have an account" : "Create a new account", x, y, panel, b -> {
             registerMode = !registerMode;
-            clearWidgets();
-            init();
+            rebuildWidgets();
         });
         y += 25;
         add("Saved accounts", x, y, panel, b -> minecraft.setScreen(new AccountManagerScreen(this)));
