@@ -167,7 +167,7 @@ wss.on('connection', (ws) => {
       case 'invite': {
         const t = target('to'); if (!t) return;
         const address = String(p.address || '').trim();
-        if (!ADDR_RE.test(address) || address.length > 255) return send(ws, { type: 'error', message: 'Invalid e4mc address' });
+        if (!validAddress(address) || address.length > 255) return send(ws, { type: 'error', message: 'Invalid e4mc address' });
         if (!me.friends.includes(t)) return send(ws, { type: 'error', message: disp(t) + ' is not your friend' });
         const tw = online.get(t);
         if (!tw) return send(ws, { type: 'error', message: disp(t) + ' is offline' });
