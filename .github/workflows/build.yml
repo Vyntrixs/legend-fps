@@ -1,4 +1,4 @@
-name: Build LEGEND FPS
+name: Build and publish LEGEND FPS
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -21,14 +21,29 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Validate Fabric metadata
+        run: python3 -m json.tool src/main/resources/fabric.mod.json >/dev/null
       - name: Build Fabric mod
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon clean build
-      - name: Upload mod JAR
+          cp build/libs/LEGEND-FPS-2.2.0.jar build/libs/LEGEND-FPS.jar
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: LEGEND-FPS-build
           path: build/libs/*.jar
           if-no-files-found: error
           retention-days: 14
+      - name: Publish latest download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: LEGEND FPS - Latest Build
+          body: |
+            Latest automatically built LEGEND FPS Fabric mod.
+            Minecraft 1.21.11 / Fabric / Java 21.
+            Download LEGEND-FPS.jar for the game. Sources JAR is optional.
+          files: build/libs/LEGEND-FPS.jar
+          overwrite_files: true
+          make_latest: true
