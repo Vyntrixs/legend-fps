@@ -155,7 +155,22 @@ public final class AccountService {
         done.accept(new Result(false, "Saved account not found"));
     }
 
+    private static void revokeSession(String token) {
+        if (token == null || token.isBlank()) return;
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(apiBase() + "/api/logout"))
+                    .timeout(Duration.ofSeconds(10))
+                    .header("Authorization", "Bearer " + token)
+                    .POST(HttpRequest.BodyPublishers.ofString("{}"))
+                    .build();
+            HTTP.sendAsync(request, HttpResponse.BodyHandlers.discarding());
+        } catch (Exception ignored) { }
+    }
+
     public static void removeAccount(String username) {
+        for (Config.SavedAccount account : Config.data.savedAccounts) {
+            if (account.username.equalsIgnoreCase(username)) { revokeSession(account.sessionToken); break; }
+        }
         Config.data.savedAccounts.removeIf(a -> a.username.equalsIgnoreCase(username));
         if (Config.data.accountUsername.equalsIgnoreCase(username)) {
             Config.data.accountUsername = "";
