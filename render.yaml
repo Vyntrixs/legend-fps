@@ -3,10 +3,13 @@ services:
     name: legend-fps-relay
     runtime: node
     plan: free
+    region: frankfurt
+    branch: cosmetics-foundation
     rootDir: legend-relay-server
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
+    autoDeployTrigger: off
     envVars:
       - key: LEGEND_RELAY_TOKEN
         generateValue: true
