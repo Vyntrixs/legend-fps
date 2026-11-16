@@ -25,7 +25,6 @@ public class FriendsScreen extends RedScreen {
     private String selectedFriend;
     private EditBox usernameBox;
     private EditBox relayBox;
-    private EditBox tokenBox;
     private final boolean inviteMode;
 
     public FriendsScreen(Screen parent) { this(parent, false); }
@@ -120,7 +119,7 @@ public class FriendsScreen extends RedScreen {
         int shown = 0;
         for (int i = scroll; i < Math.min(players.size(), scroll + rows); i++) {
             String name = players.get(i);
-            if (name.equalsIgnoreCase(Minecraft.getInstance().getUser().getName())) continue;
+            if (name.equalsIgnoreCase(AccountService.username())) continue;
             final String playerName = name;
             add(playerName, x, y, panel - 78, b -> { selectedFriend = playerName; status = "Selected: " + playerName; });
             add("Add", x + panel - 74, y, 74, b -> {
@@ -160,26 +159,28 @@ public class FriendsScreen extends RedScreen {
     }
 
     private void initRelay(int x, int panel) {
-        int y = 70;
+        int y = 74;
         relayBox = new EditBox(this.font, x, y, panel, 20, Component.literal("Relay URL"));
         relayBox.setMaxLength(200);
-        relayBox.setHint(Component.literal("wss://your-relay.onrender.com/ws"));
+        relayBox.setHint(Component.literal("wss://legend-fps-relay.onrender.com/ws"));
         relayBox.setValue(Config.data.relayUrl == null ? "" : Config.data.relayUrl);
         addRenderableWidget(relayBox);
-        y += 26;
-        tokenBox = new EditBox(this.font, x, y, panel, 20, Component.literal("Relay token"));
-        tokenBox.setMaxLength(200);
-        tokenBox.setHint(Component.literal("Relay token (if the server uses one)"));
-        tokenBox.setValue(Config.data.relayToken == null ? "" : Config.data.relayToken);
-        addRenderableWidget(tokenBox);
-        y += 26;
+        y += 30;
         add("Save & Connect", x, y, panel, b -> {
-            Config.data.relayUrl = relayBox.getValue().trim();
-            Config.data.relayToken = tokenBox.getValue().trim();
+            String value = relayBox.getValue().trim();
+            if (!value.startsWith("wss://") && !value.startsWith("ws://")) {
+                status = "Relay URL must start with wss://";
+                return;
+            }
+            Config.data.relayUrl = value;
             Config.save();
             SocialService.start();
             status = "Connecting…";
         });
+        y += 25;
+        add("Account Manager", x, y, panel, b -> minecraft.setScreen(new AccountManagerScreen(this)));
+        y += 25;
+        add("Sign in / Register", x, y, panel, b -> minecraft.setScreen(new AccountScreen(this)));
     }
 
     private void inviteSelected() {
