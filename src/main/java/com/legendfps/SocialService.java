@@ -57,7 +57,8 @@ public final class SocialService {
 
     /** Starts (or restarts) the auto-reconnecting relay connection using the saved config. */
     public static synchronized void start() {
-        if (!AccountService.isAuthenticated() || Config.data.sessionToken == null || Config.data.sessionToken.isBlank()) { setStatus("Sign in to LEGEND FPS first"); return; }\n        if (!started) {
+        if (!AccountService.isAuthenticated() || Config.data.sessionToken == null || Config.data.sessionToken.isBlank()) { setStatus("Sign in to LEGEND FPS first"); return; }
+        if (!started) {
             started = true;
             TIMER.scheduleWithFixedDelay(SocialService::tick, 5, 10, TimeUnit.SECONDS);
             TIMER.scheduleWithFixedDelay(SocialService::ping, 25, 25, TimeUnit.SECONDS);
@@ -110,10 +111,8 @@ public final class SocialService {
                 socket = ws;
                 connecting = false;
                 JsonObject hello = new JsonObject();
-                hello.addProperty("type", "register");
-                hello.addProperty("name", Minecraft.getInstance().getUser().getName());
-                hello.addProperty("secret", Config.data.secret);
-                hello.addProperty("token", Config.data.relayToken == null ? "" : Config.data.relayToken);
+                hello.addProperty("type", "authenticate");
+                hello.addProperty("sessionToken", Config.data.sessionToken);
                 JsonArray claimed = new JsonArray();
                 for (String n : Config.data.friends) claimed.add(n);
                 hello.add("friends", claimed);
@@ -228,7 +227,8 @@ public final class SocialService {
 
     private static boolean sendRaw(String json) {
         WebSocket ws = socket;
-        if (!AccountService.isAuthenticated()) { setStatus("Sign in to LEGEND FPS first"); return false; }\n        if (ws == null || !registered) { setStatus("Not connected to the relay"); return false; }
+        if (!AccountService.isAuthenticated()) { setStatus("Sign in to LEGEND FPS first"); return false; }
+        if (ws == null || !registered) { setStatus("Not connected to the relay"); return false; }
         ws.sendText(json, true);
         return true;
     }
