@@ -18,7 +18,7 @@ const SECRET_RE = /^[A-Za-z0-9-]{16,64}$/;
 const ADDR_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.e4mc\.link(?::[0-9]{1,5})?$/i;
 const validAddress = (value) => {
   if (!ADDR_RE.test(value)) return false;
-  const port = value.match(/:(\\d+)$/);
+  const port = value.match(/:(\d+)$/);
   return !port || (Number(port[1]) >= 1 && Number(port[1]) <= 65535);
 };
 
