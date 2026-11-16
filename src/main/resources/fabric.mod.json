@@ -3,7 +3,7 @@
   "id": "legendfps",
   "version": "${version}",
   "name": "LEGEND FPS",
-  "description": "LEGEND FPS client with red/black menus, relay-backed friends, friend requests, world invites (via bundled e4mc) and performance tools.",
+  "description": "LEGEND FPS client with account login, relay-backed friends, friend requests, world invites (via bundled e4mc), cosmetics and performance tools.",
   "authors": ["LEGEND FPS"],
   "environment": "client",
   "mixins": [

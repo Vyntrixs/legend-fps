@@ -19,6 +19,8 @@ public class LegendMenuScreen extends RedScreen {
         int pending = SocialService.incoming().size();
         add("Friends" + (pending > 0 ? " (" + pending + " requests)" : ""), x, y, buttonWidth, b -> minecraft.setScreen(new FriendsScreen(this)));
         y += 25;
+        add("Account: " + (AccountService.isAuthenticated() ? AccountService.username() : "Sign in"), x, y, buttonWidth, b -> minecraft.setScreen(new AccountManagerScreen(this)));
+        y += 25;
         add("Invite to World", x, y, buttonWidth, b -> minecraft.setScreen(new FriendsScreen(this, true)));
         y += 25;
         add("Cosmetics", x, y, buttonWidth, b -> minecraft.setScreen(new CosmeticsScreen(this)));

@@ -1,13 +1,14 @@
 {
   "name": "legend-fps-relay",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --check server.js"
   },
   "dependencies": {
+    "pg": "^8.13.1",
     "ws": "^8.18.0"
   }
 }

@@ -57,6 +57,7 @@ public final class SocialService {
 
     /** Starts (or restarts) the auto-reconnecting relay connection using the saved config. */
     public static synchronized void start() {
+        if (!AccountService.isAuthenticated() || Config.data.sessionToken == null || Config.data.sessionToken.isBlank()) { setStatus("Sign in to LEGEND FPS first"); return; }
         if (!started) {
             started = true;
             TIMER.scheduleWithFixedDelay(SocialService::tick, 5, 10, TimeUnit.SECONDS);
@@ -93,8 +94,8 @@ public final class SocialService {
         final URI uri;
         try {
             uri = URI.create(raw);
-            if (uri.getScheme() == null || !(uri.getScheme().equals("ws") || uri.getScheme().equals("wss"))) {
-                setStatus("Relay URL must start with wss:// (or ws://)");
+            if (uri.getScheme() == null || !uri.getScheme().equals("wss")) {
+                setStatus("Relay URL must start with wss://");
                 return;
             }
         } catch (Exception e) {
@@ -110,10 +111,8 @@ public final class SocialService {
                 socket = ws;
                 connecting = false;
                 JsonObject hello = new JsonObject();
-                hello.addProperty("type", "register");
-                hello.addProperty("name", Minecraft.getInstance().getUser().getName());
-                hello.addProperty("secret", Config.data.secret);
-                hello.addProperty("token", Config.data.relayToken == null ? "" : Config.data.relayToken);
+                hello.addProperty("type", "authenticate");
+                hello.addProperty("sessionToken", Config.data.sessionToken);
                 JsonArray claimed = new JsonArray();
                 for (String n : Config.data.friends) claimed.add(n);
                 hello.add("friends", claimed);
@@ -228,6 +227,7 @@ public final class SocialService {
 
     private static boolean sendRaw(String json) {
         WebSocket ws = socket;
+        if (!AccountService.isAuthenticated()) { setStatus("Sign in to LEGEND FPS first"); return false; }
         if (ws == null || !registered) { setStatus("Not connected to the relay"); return false; }
         ws.sendText(json, true);
         return true;

@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * Everything shown comes from the relay (SocialService); the screen never opens the vanilla LAN screen.
  */
 public class FriendsScreen extends RedScreen {
-    private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
+    private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_]{3,16}");
     private static final int TAB_FRIENDS = 0, TAB_PLAYERS = 1, TAB_REQUESTS = 2, TAB_RELAY = 3;
 
     private int tab = TAB_FRIENDS;
@@ -25,7 +25,6 @@ public class FriendsScreen extends RedScreen {
     private String selectedFriend;
     private EditBox usernameBox;
     private EditBox relayBox;
-    private EditBox tokenBox;
     private final boolean inviteMode;
 
     public FriendsScreen(Screen parent) { this(parent, false); }
@@ -69,13 +68,13 @@ public class FriendsScreen extends RedScreen {
 
     private void initFriends(int x, int panel) {
         int y = 66;
-        usernameBox = new EditBox(this.font, x, y, panel - 78, 20, Component.literal("Minecraft username"));
+        usernameBox = new EditBox(this.font, x, y, panel - 78, 20, Component.literal("LEGEND FPS username"));
         usernameBox.setMaxLength(16);
-        usernameBox.setHint(Component.literal("Player name"));
+        usernameBox.setHint(Component.literal("Account username"));
         addRenderableWidget(usernameBox);
         add("Add", x + panel - 74, y, 74, b -> {
             String name = usernameBox.getValue().trim();
-            if (!USERNAME.matcher(name).matches()) { status = "Enter a valid Minecraft username"; return; }
+            if (!USERNAME.matcher(name).matches()) { status = "Enter a valid LEGEND FPS username"; return; }
             if (SocialService.sendFriendRequest(name)) status = "Sending request…";
             else status = SocialService.status();
             usernameBox.setValue("");
@@ -120,7 +119,7 @@ public class FriendsScreen extends RedScreen {
         int shown = 0;
         for (int i = scroll; i < Math.min(players.size(), scroll + rows); i++) {
             String name = players.get(i);
-            if (name.equalsIgnoreCase(Minecraft.getInstance().getUser().getName())) continue;
+            if (name.equalsIgnoreCase(AccountService.username())) continue;
             final String playerName = name;
             add(playerName, x, y, panel - 78, b -> { selectedFriend = playerName; status = "Selected: " + playerName; });
             add("Add", x + panel - 74, y, 74, b -> {
@@ -160,41 +159,35 @@ public class FriendsScreen extends RedScreen {
     }
 
     private void initRelay(int x, int panel) {
-        int y = 70;
+        int y = 74;
         relayBox = new EditBox(this.font, x, y, panel, 20, Component.literal("Relay URL"));
         relayBox.setMaxLength(200);
-        relayBox.setHint(Component.literal("wss://your-relay.onrender.com/ws"));
+        relayBox.setHint(Component.literal("wss://legend-fps-relay.onrender.com/ws"));
         relayBox.setValue(Config.data.relayUrl == null ? "" : Config.data.relayUrl);
         addRenderableWidget(relayBox);
-        y += 26;
-        tokenBox = new EditBox(this.font, x, y, panel, 20, Component.literal("Relay token"));
-        tokenBox.setMaxLength(200);
-        tokenBox.setHint(Component.literal("Relay token (if the server uses one)"));
-        tokenBox.setValue(Config.data.relayToken == null ? "" : Config.data.relayToken);
-        addRenderableWidget(tokenBox);
-        y += 26;
+        y += 30;
         add("Save & Connect", x, y, panel, b -> {
-            Config.data.relayUrl = relayBox.getValue().trim();
-            Config.data.relayToken = tokenBox.getValue().trim();
+            String value = relayBox.getValue().trim();
+            if (!value.startsWith("wss://")) {
+                status = "Relay URL must start with wss://";
+                return;
+            }
+            Config.data.relayUrl = value;
             Config.save();
             SocialService.start();
             status = "Connecting…";
         });
+        y += 25;
+        add("Account Manager", x, y, panel, b -> minecraft.setScreen(new AccountManagerScreen(this)));
+        y += 25;
+        add("Sign in / Register", x, y, panel, b -> minecraft.setScreen(new AccountScreen(this)));
     }
 
     private void inviteSelected() {
         if (selectedFriend == null) { status = "Select a friend first"; return; }
         Minecraft client = Minecraft.getInstance();
 
-        // On an existing multiplayer server, send a normal server chat invite (original behaviour).
-        if (client.player != null && client.getCurrentServer() != null) {
-            ServerData server = client.getCurrentServer();
-            String address = server.ip == null ? "" : server.ip.trim();
-            if (address.isEmpty()) { status = "Server address unavailable"; return; }
-            client.player.connection.sendCommand("msg " + selectedFriend + " Join my LEGEND FPS session! Server: " + address);
-            status = "Server invite message sent (if /msg is allowed)";
-            return;
-        }
+        // Friend identities are LEGEND FPS account names, not necessarily Minecraft usernames.
         if (client.getSingleplayerServer() != null) {
             WorldInviteService.inviteFriend(selectedFriend);
             status = WorldInviteService.status();

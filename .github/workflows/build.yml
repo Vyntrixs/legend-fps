@@ -2,7 +2,7 @@ name: Build and publish LEGEND FPS
 
 on:
   push:
-    branches: [cosmetics-foundation]
+    branches: [cosmetics-foundation, account-system-foundation]
   workflow_dispatch:
 
 permissions:
@@ -21,13 +21,22 @@ jobs:
           java-version: '21'
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test relay server
+        working-directory: legend-relay-server
+        run: |
+          npm install
+          npm test
       - name: Validate Fabric metadata
         run: python3 -m json.tool src/main/resources/fabric.mod.json >/dev/null
       - name: Build Fabric mod
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon clean build
-          cp build/libs/LEGEND-FPS-2.2.0.jar build/libs/LEGEND-FPS.jar
+          cp build/libs/LEGEND-FPS-2.3.0.jar build/libs/LEGEND-FPS.jar
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -36,6 +45,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Publish latest download
+        if: github.ref == 'refs/heads/cosmetics-foundation'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest

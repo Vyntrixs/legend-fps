@@ -14,6 +14,16 @@ import java.util.List;
 import java.util.Map;
 
 public class Config {
+    public static class SavedAccount {
+        public String username = "";
+        public String sessionToken = "";
+        public SavedAccount() {}
+        public SavedAccount(String username, String sessionToken) {
+            this.username = username;
+            this.sessionToken = sessionToken;
+        }
+    }
+
     private static final String DEFAULT_RELAY_URL = "wss://legend-fps-relay.onrender.com/ws";
     public static class Data {
         public List<String> owned = new ArrayList<>();
@@ -22,7 +32,10 @@ public class Config {
         public Map<String, String> equipped = new HashMap<>();
         public boolean effects = true;
         public String relayUrl = "";
-        public String relayToken = "";
+        public String relayToken = ""; // legacy field; no longer used by account-based builds
+        public String accountUsername = "";
+        public String sessionToken = "";
+        public List<SavedAccount> savedAccounts = new ArrayList<>();
         /** Per-install secret that proves ownership of the Minecraft name on the relay (never shown in UI). */
         public String secret = java.util.UUID.randomUUID().toString();
         public String deviceId = java.util.UUID.randomUUID().toString();
@@ -48,6 +61,11 @@ public class Config {
         if (data.equipped == null) data.equipped = new HashMap<>();
         if (data.relayUrl == null || data.relayUrl.isBlank()) data.relayUrl = DEFAULT_RELAY_URL;
         if (data.relayToken == null) data.relayToken = "";
+        if (data.accountUsername == null) data.accountUsername = "";
+        if (data.sessionToken == null) data.sessionToken = "";
+        if (data.savedAccounts == null) data.savedAccounts = new ArrayList<>();
+        data.savedAccounts.removeIf(a -> a == null || a.username == null || a.sessionToken == null || a.username.isBlank() || a.sessionToken.isBlank());
+        if (data.savedAccounts.size() > 3) data.savedAccounts = new ArrayList<>(data.savedAccounts.subList(0, 3));
         if (data.secret == null || data.secret.length() < 16) data.secret = java.util.UUID.randomUUID().toString();
         if (data.deviceId == null || data.deviceId.isBlank()) data.deviceId = java.util.UUID.randomUUID().toString();
         save();
