@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  */
 public class FriendsScreen extends RedScreen {
     private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
-    private static final int TAB_FRIENDS = 0, TAB_REQUESTS = 1, TAB_RELAY = 2;
+    private static final int TAB_FRIENDS = 0, TAB_PLAYERS = 1, TAB_REQUESTS = 2, TAB_RELAY = 3;
 
     private int tab = TAB_FRIENDS;
     private int scroll;
@@ -43,15 +43,20 @@ public class FriendsScreen extends RedScreen {
         int x = center - panel / 2;
 
         // tabs
-        int tw = (panel - 8) / 3;
+        int tw = (panel - 12) / 4;
         int reqCount = SocialService.incoming().size();
         add((tab == TAB_FRIENDS ? "» " : "") + "Friends", x, 40, tw, b -> switchTab(TAB_FRIENDS));
+        add((tab == TAB_PLAYERS ? "» " : "") + "Players", x + tw + 4, 40, tw, b -> {
+            SocialService.refreshPublicPlayers();
+            switchTab(TAB_PLAYERS);
+        });
         add((tab == TAB_REQUESTS ? "» " : "") + "Requests" + (reqCount > 0 ? " (" + reqCount + ")" : ""),
-                x + tw + 4, 40, tw, b -> switchTab(TAB_REQUESTS));
-        add((tab == TAB_RELAY ? "» " : "") + "Relay", x + 2 * (tw + 4), 40, tw, b -> switchTab(TAB_RELAY));
+                x + 2 * (tw + 4), 40, tw, b -> switchTab(TAB_REQUESTS));
+        add((tab == TAB_RELAY ? "» " : "") + "Relay", x + 3 * (tw + 4), 40, tw, b -> switchTab(TAB_RELAY));
 
         switch (tab) {
             case TAB_FRIENDS -> initFriends(x, panel);
+            case TAB_PLAYERS -> initPlayers(x, panel);
             case TAB_REQUESTS -> initRequests(x, panel);
             default -> initRelay(x, panel);
         }
@@ -104,6 +109,34 @@ public class FriendsScreen extends RedScreen {
             SocialService.removeFriend(selectedFriend);
             status = "Removed " + selectedFriend;
             selectedFriend = null;
+        });
+    }
+
+    private void initPlayers(int x, int panel) {
+        int y = 68;
+        List<String> players = SocialService.publicPlayers();
+        int rows = maxRows();
+        scroll = Math.max(0, Math.min(scroll, Math.max(0, players.size() - rows)));
+        int shown = 0;
+        for (int i = scroll; i < Math.min(players.size(), scroll + rows); i++) {
+            String name = players.get(i);
+            if (name.equalsIgnoreCase(Minecraft.getInstance().getUser().getName())) continue;
+            final String playerName = name;
+            add(playerName, x, y, panel - 78, b -> { selectedFriend = playerName; status = "Selected: " + playerName; });
+            add("Add", x + panel - 74, y, 74, b -> {
+                if (SocialService.sendFriendRequest(playerName)) status = "Request sent to " + playerName;
+                else status = SocialService.status();
+            });
+            y += 22;
+            shown++;
+        }
+        if (players.size() > rows) {
+            add("▲", x, 68 + rows * 22, 28, b -> { scroll = Math.max(0, scroll - 1); rebuildWidgets(); });
+            add("▼", x + 32, 68 + rows * 22, 28, b -> { scroll++; rebuildWidgets(); });
+        }
+        add("Refresh", x, this.height - 78, panel, b -> {
+            SocialService.refreshPublicPlayers();
+            status = "Refreshing player list…";
         });
     }
 
@@ -199,6 +232,11 @@ public class FriendsScreen extends RedScreen {
             g.drawCenteredString(this.font, Component.literal(SocialService.isConnected()
                     ? "No friends yet - add a player by name" : "Set up the Relay tab to use friends"),
                     this.width / 2, 106, GRAY);
+        }
+        if (tab == TAB_PLAYERS && SocialService.publicPlayers().isEmpty()) {
+            g.drawCenteredString(this.font, Component.literal(SocialService.isConnected()
+                    ? "No other LEGEND FPS players online" : "Connect to Relay to see public players"),
+                    this.width / 2, 88, GRAY);
         }
         if (tab == TAB_REQUESTS && SocialService.incoming().isEmpty() && SocialService.outgoing().isEmpty()) {
             g.drawCenteredString(this.font, Component.literal("No pending requests"), this.width / 2, 80, GRAY);
