@@ -57,7 +57,7 @@ public final class SocialService {
 
     /** Starts (or restarts) the auto-reconnecting relay connection using the saved config. */
     public static synchronized void start() {
-        if (!started) {
+        if (!AccountService.isAuthenticated() || Config.data.sessionToken == null || Config.data.sessionToken.isBlank()) { setStatus("Sign in to LEGEND FPS first"); return; }\n        if (!started) {
             started = true;
             TIMER.scheduleWithFixedDelay(SocialService::tick, 5, 10, TimeUnit.SECONDS);
             TIMER.scheduleWithFixedDelay(SocialService::ping, 25, 25, TimeUnit.SECONDS);
@@ -228,7 +228,7 @@ public final class SocialService {
 
     private static boolean sendRaw(String json) {
         WebSocket ws = socket;
-        if (ws == null || !registered) { setStatus("Not connected to the relay"); return false; }
+        if (!AccountService.isAuthenticated()) { setStatus("Sign in to LEGEND FPS first"); return false; }\n        if (ws == null || !registered) { setStatus("Not connected to the relay"); return false; }
         ws.sendText(json, true);
         return true;
     }
