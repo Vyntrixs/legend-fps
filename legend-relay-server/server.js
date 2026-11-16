@@ -62,6 +62,11 @@ function stateFor(k) {
 }
 const push = (k) => { if (online.has(k) && users[k]) send(online.get(k), stateFor(k)); };
 const pushWithFriends = (k) => { push(k); (users[k]?.friends || []).forEach(push); };
+const pushPublicPlayers = () => {
+  const players = [...online.keys()].map(disp).sort((a, b) => a.localeCompare(b));
+  const packet = { type: 'players', players };
+  for (const ws of online.values()) send(ws, packet);
+};
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': 'text/plain' });
@@ -102,7 +107,8 @@ wss.on('connection', (ws) => {
         restoreFriendships(k);
       }
       send(ws, { type: 'registered', name });
-      return pushWithFriends(k);
+      pushWithFriends(k);
+      return pushPublicPlayers();
     }
     const k = ws.key;
     if (!k) return send(ws, { type: 'error', message: 'Register first' });
@@ -114,6 +120,10 @@ wss.on('connection', (ws) => {
     };
 
     switch (p.type) {
+      case 'list_players': {
+        const players = [...online.keys()].map(disp).sort((a, b) => a.localeCompare(b));
+        return send(ws, { type: 'players', players });
+      }
       case 'friend_request': {
         const t = target('to'); if (!t) return;
         if (t === k) return send(ws, { type: 'error', message: 'You cannot add yourself' });
@@ -178,7 +188,7 @@ wss.on('connection', (ws) => {
   });
   ws.on('close', () => {
     clearInterval(rate);
-    if (ws.key && online.get(ws.key) === ws) { const k = ws.key; online.delete(k); pushWithFriends(k); }
+    if (ws.key && online.get(ws.key) === ws) { const k = ws.key; online.delete(k); pushWithFriends(k); pushPublicPlayers(); }
   });
   ws.on('error', () => {});
 });
