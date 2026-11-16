@@ -94,8 +94,8 @@ public final class SocialService {
         final URI uri;
         try {
             uri = URI.create(raw);
-            if (uri.getScheme() == null || !(uri.getScheme().equals("ws") || uri.getScheme().equals("wss"))) {
-                setStatus("Relay URL must start with wss:// (or ws://)");
+            if (uri.getScheme() == null || !uri.getScheme().equals("wss")) {
+                setStatus("Relay URL must start with wss://");
                 return;
             }
         } catch (Exception e) {
