@@ -47,6 +47,7 @@ public final class SocialService {
     private static volatile int version;
 
     private static volatile List<Friend> friends = List.of();
+    private static volatile List<String> publicPlayers = List.of();
     private static volatile List<String> incoming = List.of();
     private static volatile List<String> outgoing = List.of();
 
@@ -154,6 +155,7 @@ public final class SocialService {
             registered = false;
             connecting = false;
             friends = List.of();
+            publicPlayers = List.of();
             incoming = List.of();
             outgoing = List.of();
             setStatus(why);
@@ -168,6 +170,11 @@ public final class SocialService {
             String type = p.has("type") ? p.get("type").getAsString() : "";
             switch (type) {
                 case "registered" -> { registered = true; setStatus("Connected as " + p.get("name").getAsString()); }
+                case "players" -> {
+                    List<String> p = names(p.getAsJsonArray("players"));
+                    publicPlayers = List.copyOf(p);
+                    version++;
+                }
                 case "state" -> {
                     List<Friend> f = new ArrayList<>();
                     for (JsonElement e : p.getAsJsonArray("friends")) {
@@ -233,6 +240,12 @@ public final class SocialService {
         o.addProperty(field, name);
         return sendRaw(o.toString());
     }
+
+    public static boolean refreshPublicPlayers() {
+        return sendRaw("{\"type\":\"list_players\"}");
+    }
+
+    public static List<String> publicPlayers() { return publicPlayers; }
 
     public static boolean sendFriendRequest(String name) { return sendWithName("friend_request", "to", name); }
     public static boolean acceptRequest(String name) { return sendWithName("friend_accept", "from", name); }
