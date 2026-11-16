@@ -162,16 +162,26 @@ async function registerAccount(body) {
   const key = username.toLowerCase();
   const salt = crypto.randomBytes(16).toString('hex');
   const derived = await scrypt(password, salt, 64);
+  const client = await pool.connect();
+  const token = crypto.randomBytes(32).toString('base64url');
+  const tokenHash = hash(token);
+  const expires = new Date(Date.now() + SESSION_DAYS * 86400000);
   try {
-    await pool.query('INSERT INTO legend_accounts(username_key,username,password_salt,password_hash) VALUES($1,$2,$3,$4)', [key, username, salt, derived.toString('hex')]);
+    await client.query('BEGIN');
+    await client.query('INSERT INTO legend_accounts(username_key,username,password_salt,password_hash) VALUES($1,$2,$3,$4)', [key, username, salt, derived.toString('hex')]);
+    await client.query('INSERT INTO legend_social_users(username_key) VALUES($1)', [key]);
+    await client.query('INSERT INTO legend_sessions(token_hash,username_key,expires_at) VALUES($1,$2,$3)', [tokenHash, key, expires]);
+    await client.query('COMMIT');
   } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
     if (e.code === '23505') throw Object.assign(new Error('That username is already registered'), { status: 409 });
     throw e;
+  } finally {
+    client.release();
   }
   users[key] = { name: username, friends: [], incoming: [], outgoing: [] };
-  await pool.query('INSERT INTO legend_social_users(username_key) VALUES($1)', [key]);
-  const session = await createSession(key);
-  return { username, ...session };
+  sessions.set(tokenHash, { key, expires: expires.getTime() });
+  return { username, token, expiresAt: expires.toISOString() };
 }
 async function loginAccount(body) {
   if (!dbReady) throw Object.assign(new Error('Account database is not configured yet'), { status: 503 });
