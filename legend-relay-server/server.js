@@ -26,6 +26,16 @@ const online = new Map();
 const sessions = new Map(); // token hash -> { key, expires }
 const invites = new Map();
 const claims = new Map();
+const authAttempts = new Map();
+function authRateAllowed(req) {
+  const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  const now = Date.now();
+  const entry = authAttempts.get(ip) || { count: 0, reset: now + 15 * 60 * 1000 };
+  if (entry.reset <= now) { entry.count = 0; entry.reset = now + 15 * 60 * 1000; }
+  entry.count++;
+  authAttempts.set(ip, entry);
+  return entry.count <= 12;
+}
 
 const hash = (s) => crypto.createHash('sha256').update(s).digest('hex');
 const safeEqual = (a, b) => {
@@ -177,9 +187,10 @@ async function loginAccount(body) {
 }
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,OPTIONS', 'access-control-allow-headers': 'content-type,authorization' }); return res.end(); }
-  if (req.url === '/health' || req.url === '/') return json(res, 200, { service: 'LEGEND FPS relay', status: 'online', accounts: dbReady ? 'ready' : 'database-not-configured' });
+  if (req.url === '/health' || req.url === '/') return json(res, dbReady ? 200 : 503, { service: 'LEGEND FPS relay', status: dbReady ? 'online' : 'database-not-ready', accounts: dbReady ? 'ready' : 'database-not-configured' });
   try {
     if (req.method === 'POST' && (req.url === '/api/register' || req.url === '/api/login')) {
+      if (!authRateAllowed(req)) return json(res, 429, { error: 'Too many attempts. Try again later.' });
       const body = await readBody(req);
       const result = req.url.endsWith('/register') ? await registerAccount(body) : await loginAccount(body);
       return json(res, 200, { ok: true, ...result });
@@ -282,7 +293,7 @@ wss.on('connection', (ws) => {
   ws.on('close', () => { clearInterval(rate); if(ws.key&&online.get(ws.key)===ws){const k=ws.key;online.delete(k);pushWithFriends(k);pushPublicPlayers();} });
   ws.on('error', () => {});
 });
-setInterval(() => { const cut=Date.now()-10*60*1000;for(const[id,v]of invites)if(v.at<cut)invites.delete(id); },60000);
+setInterval(() => { const cut=Date.now()-10*60*1000;for(const[id,v]of invites)if(v.at<cut)invites.delete(id); for(const[ip,v]of authAttempts)if(v.reset<Date.now())authAttempts.delete(ip); },60000);
 if (pool) initDatabase().catch(e => { console.error('PostgreSQL initialization failed:', e.message); process.exitCode = 1; });
 else { try { users = JSON.parse(fs.readFileSync(DATA_FILE,'utf8')); } catch { users = {}; } }
 server.listen(PORT,'0.0.0.0',()=>console.log('LEGEND FPS relay listening on '+PORT));
