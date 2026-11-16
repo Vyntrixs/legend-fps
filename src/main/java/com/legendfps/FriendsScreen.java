@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * Everything shown comes from the relay (SocialService); the screen never opens the vanilla LAN screen.
  */
 public class FriendsScreen extends RedScreen {
-    private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
+    private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_]{3,16}");
     private static final int TAB_FRIENDS = 0, TAB_PLAYERS = 1, TAB_REQUESTS = 2, TAB_RELAY = 3;
 
     private int tab = TAB_FRIENDS;
@@ -68,13 +68,13 @@ public class FriendsScreen extends RedScreen {
 
     private void initFriends(int x, int panel) {
         int y = 66;
-        usernameBox = new EditBox(this.font, x, y, panel - 78, 20, Component.literal("Minecraft username"));
+        usernameBox = new EditBox(this.font, x, y, panel - 78, 20, Component.literal("LEGEND FPS username"));
         usernameBox.setMaxLength(16);
-        usernameBox.setHint(Component.literal("Player name"));
+        usernameBox.setHint(Component.literal("Account username"));
         addRenderableWidget(usernameBox);
         add("Add", x + panel - 74, y, 74, b -> {
             String name = usernameBox.getValue().trim();
-            if (!USERNAME.matcher(name).matches()) { status = "Enter a valid Minecraft username"; return; }
+            if (!USERNAME.matcher(name).matches()) { status = "Enter a valid LEGEND FPS username"; return; }
             if (SocialService.sendFriendRequest(name)) status = "Sending request…";
             else status = SocialService.status();
             usernameBox.setValue("");
@@ -187,15 +187,7 @@ public class FriendsScreen extends RedScreen {
         if (selectedFriend == null) { status = "Select a friend first"; return; }
         Minecraft client = Minecraft.getInstance();
 
-        // On an existing multiplayer server, send a normal server chat invite (original behaviour).
-        if (client.player != null && client.getCurrentServer() != null) {
-            ServerData server = client.getCurrentServer();
-            String address = server.ip == null ? "" : server.ip.trim();
-            if (address.isEmpty()) { status = "Server address unavailable"; return; }
-            client.player.connection.sendCommand("msg " + selectedFriend + " Join my LEGEND FPS session! Server: " + address);
-            status = "Server invite message sent (if /msg is allowed)";
-            return;
-        }
+        // Friend identities are LEGEND FPS account names, not necessarily Minecraft usernames.
         if (client.getSingleplayerServer() != null) {
             WorldInviteService.inviteFriend(selectedFriend);
             status = WorldInviteService.status();
