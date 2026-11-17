@@ -143,7 +143,7 @@ public final class WorldInviteService {
             String diagnostics = e4mcSessionDiagnostics();
             LOGGER.warn("No e4mc public address received within 30 seconds: {}", diagnostics);
             QUEUED.clear();
-            status = "e4mc timeout: " + diagnostics + " - run /e4mc doctor";
+            status = "e4mc timeout: " + diagnostics + " - automatic diagnostics saved to latest.log";
         }
     }
 
