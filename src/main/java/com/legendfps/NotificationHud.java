@@ -51,7 +51,7 @@ public final class NotificationHud {
         long now = System.currentTimeMillis();
         ACTIVE.removeIf(toast -> now - toast.createdAt() >= LIFETIME_MS);
 
-        int shown = Math.min(3, ACTIVE.size());
+        int shown = visibleCount(mc.getWindow().getGuiScaledHeight(), ACTIVE.size());
         int right = mc.getWindow().getGuiScaledWidth() - 12;
         int bottom = mc.getWindow().getGuiScaledHeight() - 12;
         double mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth()
@@ -124,6 +124,11 @@ public final class NotificationHud {
         }
     }
 
+    private static int visibleCount(int screenHeight, int total) {
+        int capacity = Math.max(1, (screenHeight - 24) / (HEIGHT + GAP));
+        return Math.min(Math.min(3, total), capacity);
+    }
+
     private static boolean inside(double mx, double my, int x, int y, int width, int height) {
         return mx >= x && mx <= x + width && my >= y && my <= y + height;
     }
@@ -139,7 +144,8 @@ public final class NotificationHud {
 
     /** Runs before vanilla mouse handling, so notifications remain clickable over open screens. */
     public static boolean handleMouse(Minecraft mc, int button, int action) {
-        if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT || action != GLFW.GLFW_PRESS || ACTIVE.isEmpty()) return false;
+        if (mc.player == null || mc.options.hideGui || button != GLFW.GLFW_MOUSE_BUTTON_LEFT
+                || action != GLFW.GLFW_PRESS || ACTIVE.isEmpty()) return false;
 
         double mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth()
                 / (double) mc.getWindow().getWidth();
@@ -147,7 +153,7 @@ public final class NotificationHud {
                 / (double) mc.getWindow().getHeight();
         int right = mc.getWindow().getGuiScaledWidth() - 12;
         int bottom = mc.getWindow().getGuiScaledHeight() - 12;
-        int shown = Math.min(3, ACTIVE.size());
+        int shown = visibleCount(mc.getWindow().getGuiScaledHeight(), ACTIVE.size());
 
         for (int i = 0; i < shown; i++) {
             Toast toast = ACTIVE.get(i);
