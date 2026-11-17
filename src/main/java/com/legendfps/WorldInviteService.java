@@ -11,6 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.world.level.GameType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.ServerSocket;
 import java.util.Optional;
@@ -22,9 +24,10 @@ import java.util.regex.Pattern;
 /**
  * Hosting side of world invites. Publishes the integrated server (which triggers e4mc),
  * captures the real e4mc hostname that e4mc announces in chat, and sends it to friends.
- * e4mc exposes no public API, so the announcement message is the only supported source.
+ * e4mc exposes no public API, so the announcement message is the supported address source.
  */
 public final class WorldInviteService {
+    private static final Logger LOGGER = LoggerFactory.getLogger("LEGEND FPS");
     private static final Pattern E4MC_HOST = Pattern.compile(
             "(?i)\\b([a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.e4mc\\.link(?::\\d{1,5})?)\\b");
     private static final long WAIT_LIMIT_MS = 30_000;
@@ -72,6 +75,7 @@ public final class WorldInviteService {
             return ok;
         } catch (Exception e) {
             status = "Could not open the world: " + e.getClass().getSimpleName();
+            LOGGER.error("Could not publish the singleplayer world for e4mc", e);
             return false;
         }
     }
@@ -100,6 +104,7 @@ public final class WorldInviteService {
 
     private static void onAddress(String address) {
         publicAddress = address;
+        LOGGER.info("Captured e4mc public address for world invite");
         for (String friend : QUEUED) {
             SocialService.sendInvite(friend, address);
         }
@@ -107,11 +112,38 @@ public final class WorldInviteService {
         QUEUED.clear();
     }
 
+    /**
+     * Read e4mc's own session state when its address does not arrive.
+     * Reflection is intentionally diagnostic-only; no e4mc internals are modified.
+     */
+    private static String e4mcSessionDiagnostics() {
+        try {
+            Class<?> e4mc = Class.forName("link.e4mc.E4mcClient");
+            Object session = e4mc.getField("session").get(null);
+            if (session == null) return "e4mc session was not created";
+
+            Object state = session.getClass().getField("state").get(session);
+            Object failure = session.getClass().getField("failureCause").get(session);
+            if (failure instanceof Throwable cause) {
+                LOGGER.error("e4mc tunnel entered a failed state", cause);
+                return "e4mc " + state + " (" + cause.getClass().getSimpleName() + ")";
+            }
+            return "e4mc state: " + state;
+        } catch (ClassNotFoundException e) {
+            return "e4mc diagnostic class unavailable";
+        } catch (ReflectiveOperationException | LinkageError e) {
+            LOGGER.warn("Could not read e4mc session diagnostics", e);
+            return "e4mc diagnostics unavailable";
+        }
+    }
+
     /** Client tick: reports when e4mc never produced an address. */
     public static void tick(Minecraft mc) {
         if (!QUEUED.isEmpty() && System.currentTimeMillis() - waitingSince > WAIT_LIMIT_MS) {
+            String diagnostics = e4mcSessionDiagnostics();
+            LOGGER.warn("No e4mc public address received within 30 seconds: {}", diagnostics);
             QUEUED.clear();
-            status = "e4mc gave no address in 30s - check logs/latest.log for e4mc errors";
+            status = "e4mc timeout: " + diagnostics + " - run /e4mc doctor";
         }
     }
 
@@ -119,6 +151,7 @@ public final class WorldInviteService {
     public static void reset() {
         publicAddress = "";
         QUEUED.clear();
+        waitingSince = 0L;
     }
 
     /** Guest accepted an invite: leave any current world, then connect to the host's e4mc address. */
