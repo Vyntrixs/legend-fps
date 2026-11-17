@@ -5,13 +5,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.PauseScreen;
-import net.minecraft.client.gui.screens.TitleScreen;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionStage;
@@ -37,7 +37,7 @@ public final class SocialService {
         t.setDaemon(true);
         return t;
     });
-    private static final ConcurrentLinkedQueue<Invite> PENDING = new ConcurrentLinkedQueue<>();
+    private static final Set<String> KNOWN_INCOMING = ConcurrentHashMap.newKeySet();
 
     private static volatile WebSocket socket;
     private static volatile boolean registered;
@@ -187,6 +187,13 @@ public final class SocialService {
                     }
                     if (changed) Config.save();
                     incoming = names(p.getAsJsonArray("incoming"));
+                    Set<String> currentIncoming = new HashSet<>();
+                    for (String requestFrom : incoming) {
+                        String key = requestFrom.toLowerCase(Locale.ROOT);
+                        currentIncoming.add(key);
+                        if (KNOWN_INCOMING.add(key)) NotificationHud.friendRequest(requestFrom);
+                    }
+                    KNOWN_INCOMING.retainAll(currentIncoming);
                     outgoing = names(p.getAsJsonArray("outgoing"));
                     version++;
                 }
@@ -199,7 +206,7 @@ public final class SocialService {
                     String from = p.get("from").getAsString();
                     String id = p.get("id").getAsString();
                     if (NAME.matcher(from).matches() && E4MC_ADDR.matcher(address).matches() && address.length() <= 255) {
-                        PENDING.add(new Invite(id, from, address));
+                        NotificationHud.worldInvite(new Invite(id, from, address));
                     }
                 }
                 default -> { }
@@ -211,16 +218,6 @@ public final class SocialService {
         List<String> out = new ArrayList<>();
         for (JsonElement e : arr) out.add(e.getAsString());
         return List.copyOf(out);
-    }
-
-    /** Called on the client thread each tick: shows the Accept/Decline window for the next invite. */
-    public static void pumpInvites(Minecraft mc) {
-        if (PENDING.isEmpty()) return;
-        var screen = mc.screen;
-        boolean safe = screen == null || screen instanceof TitleScreen || screen instanceof PauseScreen || screen instanceof RedScreen;
-        if (!safe || screen instanceof InviteDialogScreen) return;
-        Invite next = PENDING.poll();
-        if (next != null) mc.setScreen(new InviteDialogScreen(screen, next));
     }
 
     // ---- outbound --------------------------------------------------------------------------
