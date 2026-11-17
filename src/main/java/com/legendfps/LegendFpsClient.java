@@ -7,9 +7,6 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.screens.PauseScreen;
-import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 public class LegendFpsClient implements ClientModInitializer {
@@ -18,6 +15,7 @@ public class LegendFpsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Config.load();
+        NotificationHud.register();
         
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> WorldInviteService.observeGameMessage(message));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldInviteService.reset());
@@ -37,7 +35,6 @@ public class LegendFpsClient implements ClientModInitializer {
             AccountService.tick(client);
             CosmeticEffects.tick(client);
             WorldInviteService.tick(client);
-            SocialService.pumpInvites(client);
         });
     }
 }
