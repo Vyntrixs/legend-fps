@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "WorldInviteChatMixin",
-    "PauseScreenMixin"
+    "PauseScreenMixin",
+    "NotificationMouseMixin"
   ],
   "injectors": {
     "defaultRequire": 1
