@@ -36,11 +36,11 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon clean build
-          cp build/libs/LEGEND-FPS-2.3.0.jar build/libs/LEGEND-FPS.jar
+          cp build/libs/LEGEND-FPS-2.3.1.jar build/libs/LEGEND-FPS.jar
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LEGEND-FPS-build
+          name: LEGEND-FPS-2.3.1
           path: build/libs/*.jar
           if-no-files-found: error
           retention-days: 14
