@@ -2,7 +2,7 @@ name: Build and publish LEGEND FPS
 
 on:
   push:
-    branches: [cosmetics-foundation, account-system-foundation, ui-esc-social-menu]
+    branches: [cosmetics-foundation, account-system-foundation, ui-esc-social-menu, legend-fps-2.3.1-overhaul]
   workflow_dispatch:
 
 permissions:
