@@ -126,7 +126,7 @@ public final class WorldInviteService {
             Object failure = session.getClass().getField("failureCause").get(session);
             if (failure instanceof Throwable cause) {
                 LOGGER.error("e4mc tunnel entered a failed state", cause);
-                return "e4mc " + state + " (" + cause.getClass().getSimpleName() + ")";
+                return "e4mc " + state + " (" + cause.getClass().getSimpleName() + ": " + describeFailure(cause) + ")";
             }
             return "e4mc state: " + state;
         } catch (ClassNotFoundException e) {
@@ -135,6 +135,19 @@ public final class WorldInviteService {
             LOGGER.warn("Could not read e4mc session diagnostics", e);
             return "e4mc diagnostics unavailable";
         }
+    }
+
+    /** Keeps the actionable native-loader cause visible in the in-game status and latest.log. */
+    private static String describeFailure(Throwable failure) {
+        Throwable root = failure;
+        for (int i = 0; i < 5 && root.getCause() != null && root.getCause() != root; i++) {
+            root = root.getCause();
+        }
+        String message = root.getMessage();
+        if (message == null || message.isBlank()) message = failure.getMessage();
+        if (message == null || message.isBlank()) return "no native-loader detail; inspect latest.log";
+        message = message.replaceAll("[\\r\\n\\t]+", " ").trim();
+        return message.length() > 180 ? message.substring(0, 177) + "..." : message;
     }
 
     /** Client tick: reports when e4mc never produced an address. */
